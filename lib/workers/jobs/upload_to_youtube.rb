@@ -1,6 +1,6 @@
 require 'resque'
-require './lib/pelvis/uploads/youtube'
-require './lib/pelvis/db/redb'
+require './lib/workers/uploads/youtube'
+require './lib/workers/models/track'
 
 
 class UploadToYoutube
@@ -13,7 +13,6 @@ class UploadToYoutube
 		metadata["yt_link"] = "https://www.youtube.com/watch?v=#{video.id}"
 		metadata["status"] = "UPLOADED"
 
-		# store in db
-		ReDB.store_video(metadata)
+		# update model
 	end
 end

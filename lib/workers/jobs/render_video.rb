@@ -1,6 +1,6 @@
 require 'resque'
-require './lib/pelvis/render/video'
-require './lib/pelvis/jobs/upload_to_youtube'
+require './lib/workers/render/video'
+require './lib/workers/jobs/upload_to_youtube'
 
 class RenderVideo
 	# Render Video

@@ -1,6 +1,5 @@
 require 'resque'
-require './lib/pelvis/uploads/soundcloud'
-require './lib/pelvis/db/redb'
+require './lib/workers/uploads/soundcloud'
 
 
 class UploadToSoundcloud
@@ -13,7 +12,6 @@ class UploadToSoundcloud
         metadata["yt_link"] = "https://www.youtube.com/watch?v=#{video.id}"
         metadata["status"] = "UPLOADED"
 
-        # store in db
-        ReDB.store_video(metadata)
+        # TODO store in release->track db
     end
 end

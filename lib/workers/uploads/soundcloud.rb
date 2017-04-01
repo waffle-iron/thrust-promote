@@ -1,10 +1,14 @@
 require 'soundcloud'
+require './lib/workers/configure'
 
+
+adrian_credentials = CFG['soundcloud']['adrian']    
 
 client_hash = {
     :client_id => CFG['soundcloud']['client_id'],
     :client_secret => CFG['soundcloud']['client_secret'],
-    :redirect_uri => 'http://localhost:5000/callback'
+    :username => adrian_credentials['username'],
+    :password => adrian_credentials['password']
 }
 
 class SoundcloudUpload

@@ -1,8 +1,8 @@
 require 'typhoeus'
 require 'json'
 
-BASE_URL = "https://api.dropbox.com/2-beta/"
-CONTENT_URL = "https://api-content.dropbox.com/2-beta/"
+BASE_URL = "https://api.dropbox.com/2/"
+CONTENT_URL = "https://api-content.dropbox.com/2/"
 
 class Dropbox
 	def initialize(access_token)
