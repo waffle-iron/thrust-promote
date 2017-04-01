@@ -1,10 +1,21 @@
-# thrust-workers
+# Pelvis
+Takes image and mp3 and renders YT videos
 
-Workers kubernetes cluster that will handle tasks in a serverless function as a service framework
 
-### Possible Tasks
+### Deployment objectives
+* Google Compute Engine
+* Kubernetes and Docker
+* Circle CI
+* Crate for data storage (including analytics)
 
-* Audio transcoding
-* Video rendering
-* Sending Social Media Posts
-* Collecting analytics
+
+### Video Renderer
+Prerequisites:
+* ffmpeg
+* rvideo
+
+Once finished will upload to both s3 and YT
+
+
+Future features:
+* Analytics page

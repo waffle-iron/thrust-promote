@@ -1,0 +1,7 @@
+echo "Removing media files..."
+rm -f *.mp4
+rm -f *.mp3
+rm -f *.jpg
+rm -f *.m4a
+rm -f *.pyc
+echo "Done!"

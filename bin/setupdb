@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+
+require 'csv'
+require './lib/pelvis/db/redb'
+
+def setup_db
+	images = []
+	CSV.foreach('./data/pexels_images.csv') do |row|
+		puts row[0]
+		images.push({
+      :uri => row[0],
+      :used => false})
+	end
+	conn = ReDB.get_conn
+	ReDB.get_table('images').delete.run(conn)
+  ReDB.get_table('images').insert(images).run(conn)
+  users = [
+    {
+      :name => 'adrian',
+      :favorites => []
+    },
+    {
+      :name => 'dana',
+      :favorites => []
+    }
+  ]
+	ReDB.get_table('users').delete.run(conn)
+	ReDB.get_table('users').insert(users).run(conn)
+end
+

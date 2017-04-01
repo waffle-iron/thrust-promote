@@ -1,0 +1,27 @@
+---
+# AWS Keys
+aws:
+  access_key: "AWS_ACCESS_KEY"
+  secret_key: "AWS_SECRET_KEY"
+  bucket_name: "media.thrust.fm"
+
+instagram:
+  client_id: "fbaee78f55e64d18b2ce3e101f2bb151"
+  client_secret: "8049b97228d04a46a12ce8909804ea3b"
+
+soundcloud:
+  client_id: "2053a585c080d663ad9233f7472f6c72"
+  client_secret: "510943c3dc186fe6d05f32b831c2308b"
+  adrian:
+    username: "adrian@adrianmoses.com"
+    password: "barc3lona1"
+
+youtube:
+  client_id: "345343869265-aktpnatqk0ve5emmf0knb5chr6q0picc.apps.googleusercontent.com"
+  client_secret: "74zUxuG9t1Zb9KeyZdPF2p6g"
+  access_token: "ya29.qgF7U2XtR-eqL1H5NAzt5R-WlxAyxMqyVae5T8L-PKZVQOzzxQR5NYmZv2Bxy_L_GqnSG9CWG-Ohdg"
+  refresh_token: "1/aK-8V5gX7PzLubz0RbgLy0JmV6ACMsQUEXC0ZhUKIQhIgOrJDtdun6zK6XiATCKT"
+
+dropbox:
+  access_token: "53a74B7cKi0AAAAAAAADah--2GZyF6dOLsPkoHXh5EloVb72XnkGsAhfNIUkgz3Q"
+  images_folder: "ThrustImages"
