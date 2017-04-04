@@ -1,4 +1,4 @@
-require './lib/pelvis/downloads/audiodl'
+require './lib/workers/downloads/audiodl'
 
 describe AudioDL do
 

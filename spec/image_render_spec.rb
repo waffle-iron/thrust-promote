@@ -1,4 +1,4 @@
-require './lib/pelvis/render/image'
+require './lib/workers/render/image'
 
 
 describe ImageRender do

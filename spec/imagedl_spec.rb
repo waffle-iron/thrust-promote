@@ -1,4 +1,4 @@
-require './lib/pelvis/downloads/imagedl'
+require './lib/workers/downloads/imagedl'
 
 describe ImageDL do
 	describe "#new" do
