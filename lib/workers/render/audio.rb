@@ -7,7 +7,7 @@ class AudioRender
     def initialize(audio_file, file_ext)
         @audio_file = audio_file
         basename = File.basename audio_file, File.extname(audio_file)
-        @transcoded_file = basenname + file_ext
+        @transcoded_file = basename + '.' + file_ext
     end
 
     def run

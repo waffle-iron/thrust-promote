@@ -16,10 +16,10 @@ end
 post '/transcode/audio' do
     """
         payload:
-            - source_url
-            - target_url
+            - source_path
+            - target_path
             - transcode_type
-            - user_id
+            - track_id
     """
     request_body = request.body.read
     payload = JSON.parse(request_body)
@@ -29,10 +29,10 @@ end
 post '/transcode/video' do
     """
         payload:
-            - source_url
-            - target_url
-            - image_url
-            - user_id
+            - source_path
+            - target_path
+            - image_path
+            - track_id
     """
     request_body = request.body.read
     payload = JSON.parse(request_body)
@@ -44,7 +44,7 @@ post '/social/send' do
             - access_token
             - message
             - other_params
-            - user_id
+            - social_id
     """
     request_body = request.body.read
     payload = JSON.parse(request_body)
@@ -56,7 +56,7 @@ post '/event/send' do
             - access_token
             - message
             - other_params
-            - user_id
+            - social_id
     """
     request_body = request.body.read
     payload = JSON.parse(request_body)
@@ -68,7 +68,7 @@ post '/release/send' do
             - access_token
             - url
             - other_params
-            - user_id
+            - relase_id
     """
     request_body = request.body.read
     payload = JSON.parse(request_body)

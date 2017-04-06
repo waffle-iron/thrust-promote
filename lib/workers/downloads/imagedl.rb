@@ -1,6 +1,6 @@
 require 'typhoeus'
-require './lib/pelvis/tools/dropbox'
-require './lib/pelvis/configure'
+require './lib/workers/tools/dropbox'
+require './lib/workers/configure'
 
 
 class ImageDL
