@@ -1,3 +1,0 @@
-#/bin/bash
-
-fab -H pelvis deploy

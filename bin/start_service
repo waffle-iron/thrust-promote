@@ -1,2 +1,0 @@
-rake rethinkdb:setup_db
-bundle exec foreman start
