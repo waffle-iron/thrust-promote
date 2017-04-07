@@ -2,6 +2,8 @@ require 'resque'
 require 'securerandom'
 require './lib/workers/tools/uploader'
 require './lib/workers/tools/downloader'
+require './lib/workers/render/audio'
+require './lib/workers/models/track'
 
 class TranscodeAudio
     def self.run(payload)
@@ -9,20 +11,24 @@ class TranscodeAudio
         payload[:id] = SecureRandom.uuid
         # go ahead and implement the full process
         # we'll break it down later
-        audio_uri = metadata["source_path"]
+        audio_uri = payload[:source_path]
         # download file
-        filename = AudioDL.download_from_gcs(audio_uri)
+        filename = Downloader.download_from_gcs(audio_uri)
         # transcode
-        target_file = AudioRender.run(filename, metadata["transcode_type"])
+        target_file = AudioRender.run(filename, payload[:transcode_type])
         # upload file
-        Uploader.upload_to_gcs(target_file, metadata["target_path"])
+        Uploader.upload_to_gcs(target_file, payload[:target_path])
         # update db
-        track = Track.find(metadata["track_id"])
-        track.files.create(
-          :staged => true,
-          :track_id => track.id,
-          :url_path => metadata[:target_path],
-          :file_type => "audio_#{metadata['transcode_type']}"
-        )
+        unless ENV["APP_ENV"] == "test"
+            track = Track.find(payload[:track_id])
+            if track
+                track.files.create(
+                  :staged => true,
+                  :track_id => track.id,
+                  :url_path => payload[:target_path],
+                  :file_type => "audio_#{payload[:transcode_type]}"
+                )
+            end
+        end
     end
 end

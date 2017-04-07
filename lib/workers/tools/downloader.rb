@@ -1,3 +1,6 @@
+require 'google/cloud/storage'
+require 'securerandom'
+
 
 class Downloader
     def download_audio( url)
@@ -7,12 +10,16 @@ class Downloader
     end
 
     def download_from_gcs( url )
+      root  = File.join(File.dirname(__FILE__), '../../../')
       storage =  Google::Cloud::Storage.new(
         project: "thrust",
-        keyfile: "../thrust-5f3eaea7e015.json"
+        keyfile: File.join(root, "thrust-5f3eaea7e015.json")
       )
       bucket = storage.bucket "thrust-media"
-      bucket.file url
+      file = bucket.file url
+      filename = "/tmp/dl_" + SecureRandom.uuid + ".tempfile"
+      file.download filename
+      filename
     end
 
     def self.download_from_soundcloud( soundcloud_url )

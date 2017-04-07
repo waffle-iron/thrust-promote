@@ -3,7 +3,10 @@ require 'yaml'
 require 'resque/tasks'
 require 'sinatra/activerecord'
 require 'sinatra/activerecord/rake'
+require 'active_record'
 require './app'
+
+include ActiveRecord::Tasks
 
 namespace :resque do
   task :setup do
@@ -17,3 +20,18 @@ namespace :resque do
   end
 end
 
+root = File.expand_path '..', __FILE__
+DatabaseTasks.env = ENV['ENV'] || 'development'
+conf = File.join root, 'db/database.yml'
+DatabaseTasks.database_configuration = YAML.load(File.read(conf))
+DatabaseTasks.db_dir = File.join root, 'db'
+DatabaseTasks.fixtures_path = File.join root, 'test/fixtures'
+DatabaseTasks.migrations_paths = [File.join(root, 'db/migrate')]
+DatabaseTasks.root = root
+
+task :environment do
+  ActiveRecord::Base.configurations = DatabaseTasks.database_configuration
+  ActiveRecord::Base.establish_connection DatabaseTasks.env.to_sym
+end
+
+load 'active_record/railties/databases.rake'
