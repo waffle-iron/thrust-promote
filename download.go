@@ -5,7 +5,7 @@ import (
 )
 
 
-func DownloadFromGcs(string urlPath, string filename) string {
+func DownloadFromGCS(string urlPath, string filename) string {
     ctx := context.Background()
 
     // set a project ID

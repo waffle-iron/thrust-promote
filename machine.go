@@ -4,8 +4,6 @@ import (
     "log"
 )
 
-const WORKER_COUNT = 5;
-
 type Machine struct {
     TaskMap map[string]interface{}
 }
@@ -28,8 +26,8 @@ func (mach *Machine) LaunchWorker(name string) error {
     }
 }
 
-func (mach *Machine) LaunchWorkers() error {
-    for i := range WORKER_COUNT {
+func (mach *Machine) LaunchWorkers(worker_count int = 5) error {
+    for i := range worker_count {
         w := Worker{Name: "worker-" + i}
         if err := w.Run(); err != nil {
             log.Fatalf("Worker failed to start: %v", err)

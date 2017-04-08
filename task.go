@@ -1,9 +1,10 @@
 package main
 
 type Task struct {
+    Id string
+    Status string
     Name string
     Metadata string
-    PayloadType string
 }
 
 func (t *Task) DeserializeMetadata(obj interface{}) {
