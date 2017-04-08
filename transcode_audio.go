@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"bytes"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -57,10 +58,23 @@ func TranscodeAudio(task Task) (bool, error) {
 	targetFilename := fmt.Sprintf("%s.%s", basename, payload.TranscodeType)
 
 	// transcode
-	cmd := "ffmpeg"
-	args := []string{"-i", filename, targetFilename}
-	if err := exec.Command(cmd, args...).Run(); err != nil {
-		log.Fatalf("Command failed: %v", err)
+	// cmd := "ffmpeg"
+	// args := []string{"-i", filename, targetFilename}
+	fmt.Println(filename)
+	fmt.Println(targetFilename)
+	var stdErr bytes.Buffer
+	cmd := exec.Command("ffmpeg", "-i", filename, targetFilename)
+	cmd.Stderr = &stdErr
+	if err := cmd.Start(); err != nil {
+		log.Println(stdErr.String())
+		log.Fatalf("Command failed to start: %v", err)
+		return false, err
+	}
+
+	err := cmd.Wait() 
+	if err != nil {
+		log.Println(stdErr.String())
+		log.Fatalf("Command failed to finish: %v", err)
 		return false, err
 	}
 

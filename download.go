@@ -40,7 +40,7 @@ func DownloadFromGCS(urlPath string, filename string) string {
         panic(err)
     }
 
-    if err := ioutil.WriteFile(filename, data, 644); err != nil {
+    if err := ioutil.WriteFile(filename, data, 777); err != nil {
         panic(err)
     }
 
