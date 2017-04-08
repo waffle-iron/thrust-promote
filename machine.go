@@ -1,7 +1,7 @@
 package main
 
 import (
-    "fmt"
+    "log"
 )
 
 const WORKER_COUNT = 5;
@@ -20,23 +20,21 @@ func (mach *Machine) RegisterTasks(taskMap map[string]interface{}) {
     }
 }
 
-func (mach *Machine) LaunchWorker(name string) {
-    w := Worker{name: name}
+func (mach *Machine) LaunchWorker(name string) error {
+    w := Worker{Name: name}
     if err := w.Run(); err != nil {
-
+        log.Fatalf("Worker failed to start: %v", err)
+        panic(err)
     }
 }
 
 func (mach *Machine) LaunchWorkers() error {
-    errorChan = make(chan error)
     for i := range WORKER_COUNT {
-        go func() {
-            w := Worker{name: "worker-" + i}
-            if err := w.Run(); err != nil {
-                errorChan <- err
-                return
-            }
-        }()
+        w := Worker{Name: "worker-" + i}
+        if err := w.Run(); err != nil {
+            log.Fatalf("Worker failed to start: %v", err)
+            panic(err)
+        }
     }
 }
 
@@ -62,4 +60,19 @@ func main() {
        that will exhaust the redis queue
     **/
     // First register tasks
+    taskMap := map[string]interface{}{
+        "transcode_audio": TranscodeAudio,
+        "transcode_video": TranscodeVideo,
+        "social_send": SocialSend,
+        "event_send": EventSend,
+        "release_send": ReleaseSend,
+    }
+    machine := Machine{}
+    log.Info("Registering Tasks...")
+    machine.RegisterTasks(taskMap)
+    log.Info("Launching Workers...")
+    if err := machine.LaunchWorkers(); err != nil {
+        log.Fatalf("Failed to launch workers: %v", err)
+        panic(err)
+    }
 }
