@@ -6,8 +6,15 @@ import (
 )
 
 type Machine struct {
+    cfg ConnectionSettings
     broker *Broker
     TaskMap map[string]interface{}
+}
+
+func (mach *Machine) NewMachine(cfg ConnectionSettings) *Machine {
+    machine := &Machine{cfg: ConnectionSettings}
+    machine.CreateBroker()
+    return &machine
 }
 
 func (mach *Machine) GetRegisteredTask(taskName string) interface{} {
@@ -54,8 +61,11 @@ func (mach *Machine) SendTask(task *Task) {
 }
 
 func (mach *Machine) CreateBroker() {
+    mach.cfg.ParseUrl()
     mach.broker = &Broker{
-        host:"redis://127.0.0.0.1:6379"}
+        host: mach.cfg.Host,
+        database: mach.cfg.Database,
+        port: mach.cfg.Port}
 }
 
 func (mach *Machine) GetBroker() *Broker {

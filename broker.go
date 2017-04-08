@@ -3,19 +3,19 @@ package main
 import (
     "encoding/json"
     "github.com/garyburd/redigo/redis"
-    DB "github.com/ammoses89/thrust-workers/db"
+    db "github.com/ammoses89/thrust-workers/db"
 )
 
 type Broker struct {
     host string
-    db string
+    database string
     password string
     pool *redis.Pool
     errorChan chan error
 }
 
 func (broker *Broker) QueueTask(task *Task) error {
-    broker.pool = DB.CreatePool(broker.host)
+    broker.pool = db.CreatePool(broker.host)
     defer broker.pool.Close()
 
     broker.errorChan = make(chan error)
@@ -31,7 +31,7 @@ func (broker *Broker) QueueTask(task *Task) error {
 }
 
 func (broker *Broker) Dequeue(worker *Worker) error {
-    broker.pool = DB.CreatePool(broker.host)
+    broker.pool = db.CreatePool(broker.host)
     defer broker.pool.Close()
 
     broker.errorChan = make(chan error)

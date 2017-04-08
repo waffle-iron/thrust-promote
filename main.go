@@ -8,7 +8,9 @@ import (
 
 const WORKER_COUNT = 5;
 
+
 func main() {
+	config := LoadConfig
 	taskMap := map[string]interface{}{
 		"transcode_audio": TranscodeAudio,
 		"transcode_video": TranscodeVideo,
@@ -16,8 +18,8 @@ func main() {
 		"event_send":      EventSend,
 		"release_send":    ReleaseSend,
 	}
-	machine := &Machine{}
-	db := &db_.Postgres{}
+	machine := &Machine{cfg: config.Redis}
+	db := db_.NewPostgres(config.Db)
 	log.Println("Registering Tasks...")
 	machine.RegisterTasks(taskMap)
 	log.Println("Launching Workers...")

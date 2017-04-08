@@ -58,10 +58,6 @@ func TranscodeAudio(task Task) (bool, error) {
 	targetFilename := fmt.Sprintf("%s.%s", basename, payload.TranscodeType)
 
 	// transcode
-	// cmd := "ffmpeg"
-	// args := []string{"-i", filename, targetFilename}
-	fmt.Println(filename)
-	fmt.Println(targetFilename)
 	var stdErr bytes.Buffer
 	cmd := exec.Command("ffmpeg", "-i", filename, targetFilename)
 	cmd.Stderr = &stdErr
