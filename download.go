@@ -5,6 +5,7 @@ import (
     "io/ioutil"
     "cloud.google.com/go/storage"
     "golang.org/x/net/context"
+    "google.golang.org/api/option"
 )
 
 
@@ -14,7 +15,7 @@ func DownloadFromGCS(urlPath string, filename string) string {
     // set a project ID
     // projectID := "thrust"
 
-    client, err := storage.NewClient(ctx)
+    client, err := storage.NewClient(ctx, option.WithServiceAccountFile("thrust-5f3eaea7e015.json"))
     if err != nil {
         log.Fatalf("Failed to create client: %v", err)
     }
@@ -44,5 +45,4 @@ func DownloadFromGCS(urlPath string, filename string) string {
     }
 
     return filename
-
 }
