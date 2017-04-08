@@ -19,7 +19,7 @@ func CreateTranscodeAudioTask(machine *Machine, pg *Postgres) string {
 	// add UUID
 
 	task := Task{
-        Id: fmt.Sprintf("task-%v", uuid.New())
+        Id: fmt.Sprintf("task-%v", uuid.New()),
 		Name:     "transcode_audio",
 		Metadata: payload,
 	}

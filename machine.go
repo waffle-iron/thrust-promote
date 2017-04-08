@@ -5,6 +5,7 @@ import (
 )
 
 type Machine struct {
+    broker *Broker
     TaskMap map[string]interface{}
 }
 
@@ -26,7 +27,7 @@ func (mach *Machine) LaunchWorker(name string) error {
     }
 }
 
-func (mach *Machine) LaunchWorkers(worker_count int = 5) error {
+func (mach *Machine) LaunchWorkers(worker_count int) error {
     for i := range worker_count {
         w := Worker{Name: "worker-" + i}
         if err := w.Run(); err != nil {
@@ -36,41 +37,20 @@ func (mach *Machine) LaunchWorkers(worker_count int = 5) error {
     }
 }
 
-func (mach *Machine) CreateBroker() *Broker {
+func (mach *Machine) SendTask(task *Task) {
+    broker = mach.GetBroker()
+    broker.QueueTask(task)
+}
 
-    return &Broker{
-        host:"127.0.0.0.1:6379"
-    }
+func (mach *Machine) CreateBroker() {
+
+    mach.broker := &Broker{
+        host:"redis://127.0.0.0.1:6379"}
 }
 
 func (mach *Machine) GetBroker() *Broker {
-    broker := mach.CreateBroker()
-    return broker
-}
-
-
-func main() {
-    /**
-    This will be the server
-    1) it will register tasks at start
-    2) it will then launch workers
-    3) the workes will run go routines
-       that will exhaust the redis queue
-    **/
-    // First register tasks
-    taskMap := map[string]interface{}{
-        "transcode_audio": TranscodeAudio,
-        "transcode_video": TranscodeVideo,
-        "social_send": SocialSend,
-        "event_send": EventSend,
-        "release_send": ReleaseSend,
+    if mach.broker == nil {
+        mach.broker := mach.CreateBroker()
     }
-    machine := Machine{}
-    log.Info("Registering Tasks...")
-    machine.RegisterTasks(taskMap)
-    log.Info("Launching Workers...")
-    if err := machine.LaunchWorkers(); err != nil {
-        log.Fatalf("Failed to launch workers: %v", err)
-        panic(err)
-    }
+    return mach.broker
 }

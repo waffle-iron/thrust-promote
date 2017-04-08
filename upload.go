@@ -1,3 +1,5 @@
+package main
+
 import (
     "log"
     "cloud.google.com/go/storage"
@@ -5,7 +7,7 @@ import (
 )
 
 
-func UploadFromGcs(string urlPath, string filename) int {
+func UploadFromGCS(urlPath string, filename string) int {
     ctx := context.Background()
 
     // set a project ID

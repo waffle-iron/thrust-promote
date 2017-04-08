@@ -2,8 +2,8 @@ package main
 
 import (
     "encoding/json"
-    DB "github.com/ammoses89/thrust-workers/db"
     "github.com/garyburd/redigo/redis"
+    DB "github.com/ammoses89/thrust-workers/db"
 )
 
 type Broker struct {
@@ -14,12 +14,28 @@ type Broker struct {
     errorChan chan error
 }
 
-func (broker *Broker) Dequeue(worker Worker) error {
+func (broker *Broker) QueueTask(task *Task) error {
     broker.pool = DB.CreatePool(broker.host)
     defer broker.pool.Close()
 
     broker.errorChan = make(chan error)
-    tasks := make(chan []Task)
+    conn = broker.pool.Get()
+
+    serializedTask, err := json.Marshal(task)
+    if err != nil {
+        panic(err)
+    }
+
+    _, err := conn.Do("RPUSH", "default", serializedTask)
+    return err
+}
+
+func (broker *Broker) Dequeue(worker *Worker) error {
+    broker.pool = DB.CreatePool(broker.host)
+    defer broker.pool.Close()
+
+    broker.errorChan = make(chan error)
+    tasks := make(chan Task)
     conn = broker.pool.Get()
 
     go func() {

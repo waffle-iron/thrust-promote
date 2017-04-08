@@ -1,10 +1,12 @@
+package main
+
 import (
     "fmt"
-    "os/exec"
 )
 
 func CreateSocialSendTask() string {
     // TODO add task to worker
+    fmt.Println("Save task")
     return "{\"status\": 200}"
 }
 

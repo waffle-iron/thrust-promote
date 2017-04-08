@@ -1,3 +1,5 @@
+package main
+
 import (
     "log"
     "cloud.google.com/go/storage"
@@ -5,7 +7,7 @@ import (
 )
 
 
-func DownloadFromGCS(string urlPath, string filename) string {
+func DownloadFromGCS(urlPath string, filename string) string {
     ctx := context.Background()
 
     // set a project ID
