@@ -1,5 +1,9 @@
 package main
 
+import (
+    "encoding/json"
+)
+
 type Task struct {
     Id string
     Status string
@@ -9,7 +13,7 @@ type Task struct {
 
 func (t *Task) DeserializeMetadata(obj interface{}) {
     // deserialize metadata into obj
-    if err := json.Unmarshal(t.Metadata, &obj); err != nil {
+    if err := json.Unmarshal([]byte(t.Metadata), &obj); err != nil {
         panic(err)
     }
 }

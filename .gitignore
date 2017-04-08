@@ -37,3 +37,4 @@ jspm_packages
 .node_repl_history
 *.sublime-workspace
 thrust-5f3eaea7e015.json
+thrust-workers

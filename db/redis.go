@@ -8,9 +8,8 @@ import (
 func CreatePool(addrStr string) *redis.Pool {
     return &redis.Pool{
         MaxIdle: 2,
-        IdleTimeout: 60 * time.Second,
-        Dial: func() (redis.Conn, err) {
+        IdleTimeout: 200 * time.Second,
+        Dial: func() (redis.Conn, error) {
             return redis.Dial("tcp", addrStr)
-        }
-    }
+        }}
 }

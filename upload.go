@@ -2,16 +2,17 @@ package main
 
 import (
     "log"
+    "io/ioutil"
     "cloud.google.com/go/storage"
     "golang.org/x/net/context"
 )
 
 
-func UploadFromGCS(urlPath string, filename string) int {
+func UploadToGCS(urlPath string, filename string) int {
     ctx := context.Background()
 
     // set a project ID
-    projectID := "thrust"
+    // projectID := "thrust"
 
     client, err := storage.NewClient(ctx)
     if err != nil {

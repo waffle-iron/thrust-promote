@@ -2,6 +2,7 @@ package main
 
 import (
     "log"
+    "io/ioutil"
     "cloud.google.com/go/storage"
     "golang.org/x/net/context"
 )
@@ -11,7 +12,7 @@ func DownloadFromGCS(urlPath string, filename string) string {
     ctx := context.Background()
 
     // set a project ID
-    projectID := "thrust"
+    // projectID := "thrust"
 
     client, err := storage.NewClient(ctx)
     if err != nil {
@@ -29,14 +30,16 @@ func DownloadFromGCS(urlPath string, filename string) string {
     rc, err := object.NewReader(ctx)
     if err != nil {
         // reader
+        panic(err)
     }
     data, err := ioutil.ReadAll(rc)
     rc.Close()
     if err != nil {
         // Handle error
+        panic(err)
     }
 
-    if err := ioutil.WriteFile(filename, data); err != nil {
+    if err := ioutil.WriteFile(filename, data, 644); err != nil {
         panic(err)
     }
 

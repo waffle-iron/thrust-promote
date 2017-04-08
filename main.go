@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/go-martini/martini"
 	"log"
+	db_ "github.com/ammoses89/thrust-workers/db"
 )
 
 const WORKER_COUNT = 5;
@@ -16,10 +17,10 @@ func main() {
 		"release_send":    ReleaseSend,
 	}
 	machine := &Machine{}
-	db := &Postges{}
-	log.Info("Registering Tasks...")
+	db := &db_.Postgres{}
+	log.Println("Registering Tasks...")
 	machine.RegisterTasks(taskMap)
-	log.Info("Launching Workers...")
+	log.Println("Launching Workers...")
 	if err := machine.LaunchWorkers(WORKER_COUNT); err != nil {
 		log.Fatalf("Failed to launch workers: %v", err)
 		panic(err)
@@ -35,7 +36,7 @@ func main() {
 		r.Post("/transcode/audio", CreateTranscodeAudioTask)
 		r.Post("/transcode/video", CreateTranscodeVideoTask)
 		r.Post("/social/send", CreateSocialSendTask)
-		r.Post("/event/send", CreaetEventSendTask)
+		r.Post("/event/send", CreateEventSendTask)
 		r.Post("/release/send", CreateReleaseSendTask)
 	})
 

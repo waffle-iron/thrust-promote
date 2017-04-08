@@ -10,15 +10,18 @@ type Worker struct {
     machine *Machine
 }
 
-func (w *Worker) Process(task Task) int {
+func (w *Worker) Process(task *Task) error {
     // will take a task and run task with args
     taskFunc := w.machine.GetRegisteredTask(task.Name)
     metadataArg := make([]reflect.Value, 1)
     reflectedTask := reflect.ValueOf(taskFunc)
-    if err := reflectedTask.Call(metadataArg); err != nil {
-        log.Fatalf("Error occured with running task: %v", err)
-        panic(err)
+
+    results := reflectedTask.Call(metadataArg)
+    log.Println("FUnc called successfully")
+    if !results[1].IsNil() {
+        return results[1].Interface().(error)
     }
+    return nil
 }
 
 
@@ -29,7 +32,7 @@ func (w *Worker) Run() error {
     go func() {
         for {
             err := broker.Dequeue(w)
-            if err {
+            if err != nil {
                 errChan <- err
                 return
             }
