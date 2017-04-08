@@ -40,5 +40,38 @@ Prerequisites
 * data
 
 
-
 Postgres will be used to query and update user data
+
+
+
+### Workers
+
+
+
+#### Concept
+
+1. The workers are run by a `Machine` 
+2. `Machine` runs like a server and spins the workers
+3. Each `Worker` is pulls from the redis server `Broker`  struct 
+4. The `Broker` struct converts the redis data JSON to a golang map that contains the task needed to be run
+5. The `Worker` calls that task and the task runs to completion
+
+
+
+#### Machine
+
+#### Worker
+
+#### Broker
+
+#### Task
+
+A task is a struct representation of:
+
+* a `func` to be called to perform the task, and
+* arguments to be passed to the corresponding `func`
+
+
+
+
+
