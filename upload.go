@@ -14,7 +14,6 @@ func UploadToGCS(urlPath string, filename string) int {
 
     // set a project ID
     // projectID := "thrust"
-
     client, err := storage.NewClient(ctx, option.WithServiceAccountFile("thrust-5f3eaea7e015.json"))
     if err != nil {
         log.Fatalf("Failed to create client: %v", err)

@@ -47,7 +47,7 @@ func TranscodeAudio(task Task) (bool, error) {
 	task.DeserializeMetadata(&payload)
 
 	extname := filepath.Ext(payload.SourceUrl)
-	filename := fmt.Sprintf("audio_dl_%s-%s", task.Id, extname)
+	filename := fmt.Sprintf("/tmp/audio_dl_%s-%s", task.Id, extname)
 
 	// grab file
 	DownloadFromGCS(payload.SourceUrl, filename)
@@ -67,5 +67,7 @@ func TranscodeAudio(task Task) (bool, error) {
 	// upload to gcs
 	UploadToGCS(targetFilename, payload.TargetUrl)
 
+	// if it fails to delete, don't worry about it
+	os.Remove(filename) 
 	return true, nil
 }

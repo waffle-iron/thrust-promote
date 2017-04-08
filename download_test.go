@@ -11,4 +11,12 @@ func TestDownload(t *testing.T) {
 
     newFilename := DownloadFromGCS(urlPath, filename)
     assert.Equal(t, filename, newFilename, "Filename should be passed back")
+    // _, err := os.Stat(newFilename)
+    // if assert.NotError(t, err) {
+    //     if err = os.Remove(newFilename); err != nil {
+    //         fmt.Println(err.Error())
+    //         os.Exit(0)
+    //     }
+    // }
+
 }
