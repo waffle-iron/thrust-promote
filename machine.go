@@ -2,19 +2,20 @@ package main
 
 import (
     "log"
+    config "github.com/ammoses89/thrust-workers/config"
     "fmt"
 )
 
 type Machine struct {
-    cfg ConnectionSettings
+    cfg config.ConnectionSettings
     broker *Broker
     TaskMap map[string]interface{}
 }
 
-func (mach *Machine) NewMachine(cfg ConnectionSettings) *Machine {
-    machine := &Machine{cfg: ConnectionSettings}
+func NewMachine(cfg config.ConnectionSettings) *Machine {
+    machine := &Machine{cfg: cfg}
     machine.CreateBroker()
-    return &machine
+    return machine
 }
 
 func (mach *Machine) GetRegisteredTask(taskName string) interface{} {

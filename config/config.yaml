@@ -1,0 +1,26 @@
+# SQLite version 3.x
+#   gem install sqlite3
+#
+#   Ensure the SQLite 3 gem is defined in your Gemfile
+#   gem 'sqlite3'
+#
+default: &default
+  pool: 5
+  timeout: 5000
+
+db:
+  development:
+    <<: *default
+    database: thrust
+    user: adrian
+    password:
+  production:
+    <<: *default
+    database: thrust
+    user: thrust
+    password:
+redis:
+  development:
+    url: redis://localhost:6379/0
+  production:
+    url: redis://localhost:6379/1

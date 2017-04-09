@@ -1,30 +1,22 @@
 package db
 
 import (
+    "fmt"
     "log"
     "database/sql"
+    config "github.com/ammoses89/thrust-workers/config"
     _ "github.com/lib/pq"
 )
 
-type ConnectionSettings struct {
-        Pool int `yaml:pool`
-        Url string `yaml:url`
-        Timeout int `yaml:timeout`
-        Host string `yaml:host`
-        Port string `yaml:port`
-        Database string `yaml:database`
-        Password string `yaml:password`
-}
-
 type Postgres struct {
-    cfg ConnectionSettings
+    cfg *config.ConnectionSettings
 }
 
-func NewPostgres(config ConnectionSettings) *Postgres {
-    if !config.Url {
-        config.Url = fmt.Sprintf("postgres://%s:%s/%s", config.Host, config.Port, config.Database)
+func NewPostgres(cfg *config.ConnectionSettings) *Postgres {
+    if cfg.Url == "" {
+        cfg.Url = fmt.Sprintf("postgres://%s:%s/%s", cfg.Host, cfg.Port, cfg.Database)
     }
-    return &Postgres{cfg: config}
+    return &Postgres{cfg: cfg}
 }
 
 func (pg *Postgres) GetConn() *sql.DB {

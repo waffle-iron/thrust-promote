@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/go-martini/martini"
 	"log"
+	config "github.com/ammoses89/thrust-workers/config"
 	db_ "github.com/ammoses89/thrust-workers/db"
 )
 
@@ -10,7 +11,7 @@ const WORKER_COUNT = 5;
 
 
 func main() {
-	config := LoadConfig
+	cfg := config.LoadConfig()
 	taskMap := map[string]interface{}{
 		"transcode_audio": TranscodeAudio,
 		"transcode_video": TranscodeVideo,
@@ -18,8 +19,8 @@ func main() {
 		"event_send":      EventSend,
 		"release_send":    ReleaseSend,
 	}
-	machine := &Machine{cfg: config.Redis}
-	db := db_.NewPostgres(config.Db)
+	machine := NewMachine(cfg.Redis.Development)
+	db := db_.NewPostgres(&cfg.Db.Development)
 	log.Println("Registering Tasks...")
 	machine.RegisterTasks(taskMap)
 	log.Println("Launching Workers...")

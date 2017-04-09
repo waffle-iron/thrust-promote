@@ -10,6 +10,7 @@ type Broker struct {
     host string
     database string
     password string
+    port int
     pool *redis.Pool
     errorChan chan error
 }
