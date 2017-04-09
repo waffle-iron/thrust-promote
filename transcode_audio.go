@@ -45,7 +45,10 @@ func removeFileExt(filename string) string {
 
 func TranscodeAudio(task Task) (bool, error) {
 	var payload AudioTranscodePayload
-	task.DeserializeMetadata(&payload)
+	err := task.DeserializeMetadata(&payload)
+	if err != nil {
+		log.Fatalf("Failed to deserialize payload: %v", err)
+	}
 
 	extname := filepath.Ext(payload.SourceUrl)
 	filename := fmt.Sprintf("/tmp/audio_dl_%s-%s", task.Id, extname)
@@ -67,7 +70,7 @@ func TranscodeAudio(task Task) (bool, error) {
 		return false, err
 	}
 
-	err := cmd.Wait() 
+	err = cmd.Wait() 
 	if err != nil {
 		log.Println(stdErr.String())
 		log.Fatalf("Command failed to finish: %v", err)

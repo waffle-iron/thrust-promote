@@ -11,7 +11,9 @@ default: &default
 db:
   development:
     <<: *default
+    host: "localhost"
     database: thrust
+    port: 5432
     user: adrian
     password:
   production:

@@ -14,16 +14,16 @@ type Postgres struct {
 
 func NewPostgres(cfg *config.ConnectionSettings) *Postgres {
     if cfg.Url == "" {
-        cfg.Url = fmt.Sprintf("postgres://%s:%s/%s", cfg.Host, cfg.Port, cfg.Database)
+        cfg.Url = fmt.Sprintf("postgres://%s:%d/%s?sslmode=disable", cfg.Host, cfg.Port, cfg.Database)
     }
     return &Postgres{cfg: cfg}
 }
 
-func (pg *Postgres) GetConn() *sql.DB {
+func (pg *Postgres) GetConn() (*sql.DB, error) {
     db, err := sql.Open("postgres", pg.cfg.Url)
     if err != nil {
         log.Fatal(err)
+        return nil, err
     }
-
-    return db
+    return db, nil
 }

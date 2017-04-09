@@ -1,5 +1,11 @@
 package main
 
+type TestPayload struct {
+    id string `json:id`
+    status string `json:status`
+    Message string `json:message`
+}
+
 type AudioTranscodePayload struct {
     id string `json:id`
     status string `json:status`

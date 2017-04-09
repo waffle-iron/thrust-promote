@@ -11,9 +11,10 @@ type Task struct {
     Metadata string
 }
 
-func (t *Task) DeserializeMetadata(obj interface{}) {
+func (t *Task) DeserializeMetadata(obj interface{}) error {
     // deserialize metadata into obj
     if err := json.Unmarshal([]byte(t.Metadata), &obj); err != nil {
-        panic(err)
+        return err
     }
+    return nil
 }

@@ -63,10 +63,7 @@ func (mach *Machine) SendTask(task *Task) {
 
 func (mach *Machine) CreateBroker() {
     mach.cfg.ParseUrl()
-    mach.broker = &Broker{
-        host: mach.cfg.Host,
-        database: mach.cfg.Database,
-        port: mach.cfg.Port}
+    mach.broker = NewBroker(&mach.cfg)
 }
 
 func (mach *Machine) GetBroker() *Broker {

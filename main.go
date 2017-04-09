@@ -11,7 +11,7 @@ const WORKER_COUNT = 5;
 
 
 func main() {
-	cfg := config.LoadConfig()
+	cfg := config.LoadConfig("config/config.yaml")
 	taskMap := map[string]interface{}{
 		"transcode_audio": TranscodeAudio,
 		"transcode_video": TranscodeVideo,

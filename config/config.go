@@ -62,10 +62,10 @@ type Config struct {
     } `yaml:redis`
 }
 
-func LoadConfig() *Config {
-    data, err := ioutil.ReadFile("config.yaml")
+func LoadConfig(configPath string) *Config {
+    data, err := ioutil.ReadFile(configPath)
     if err != nil {
-        log.Fatalf("Unable to laod file: %v", err)
+        log.Fatalf("Unable to load file: %v", err)
         log.Panic(err)
     }
 

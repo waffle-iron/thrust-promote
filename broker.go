@@ -1,22 +1,43 @@
 package main
 
 import (
+    "fmt"
     "encoding/json"
     "github.com/garyburd/redigo/redis"
+    config "github.com/ammoses89/thrust-workers/config"
     db "github.com/ammoses89/thrust-workers/db"
 )
 
 type Broker struct {
     host string
     database string
+    url string
+    user string
     password string
     port int
     pool *redis.Pool
     errorChan chan error
 }
 
+func NewBroker(cfg *config.ConnectionSettings) *Broker {
+    return &Broker{
+        host: cfg.Host,
+        url: cfg.Url,
+        database: cfg.Database,
+        user: cfg.User,
+        password: cfg.Password,
+        port: cfg.Port}
+}
+
+func (broker *Broker) BuildAddrString() string {
+    //TODO add support for Authentication
+    return fmt.Sprintf("%s:%d/%s", broker.host, broker.port, broker.database)
+}
+
 func (broker *Broker) QueueTask(task *Task) error {
-    broker.pool = db.CreatePool(broker.host)
+    addString := broker.BuildAddrString()
+    fmt.Println(addString)
+    broker.pool = db.CreatePool(addString)
     defer broker.pool.Close()
 
     broker.errorChan = make(chan error)
@@ -24,10 +45,10 @@ func (broker *Broker) QueueTask(task *Task) error {
 
     serializedTask, err := json.Marshal(task)
     if err != nil {
-        panic(err)
+        return err
     }
 
-    _, err = conn.Do("RPUSH", "default", serializedTask)
+    _, err = conn.Do("RPUSH", "thrust-default", serializedTask)
     return err
 }
 
