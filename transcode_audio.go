@@ -48,6 +48,7 @@ func TranscodeAudio(task Task) (bool, error) {
 	err := task.DeserializeMetadata(&payload)
 	if err != nil {
 		log.Fatalf("Failed to deserialize payload: %v", err)
+		return false, nil
 	}
 
 	extname := filepath.Ext(payload.SourceUrl)

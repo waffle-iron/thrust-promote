@@ -7,13 +7,14 @@ import (
 )
 
 type Machine struct {
-    cfg config.ConnectionSettings
+    cfg *config.ConnectionSettings
     broker *Broker
     TaskMap map[string]interface{}
 }
 
-func NewMachine(cfg config.ConnectionSettings) *Machine {
+func NewMachine(cfg *config.ConnectionSettings) *Machine {
     machine := &Machine{cfg: cfg}
+    machine.TaskMap = make(map[string]interface{})
     machine.CreateBroker()
     return machine
 }
@@ -56,14 +57,14 @@ func (mach *Machine) LaunchWorkers(worker_count int) error {
     return nil
 }
 
-func (mach *Machine) SendTask(task *Task) {
+func (mach *Machine) SendTask(task *Task) error {
     broker := mach.GetBroker()
-    broker.QueueTask(task)
+    return broker.QueueTask(task)
 }
 
 func (mach *Machine) CreateBroker() {
     mach.cfg.ParseUrl()
-    mach.broker = NewBroker(&mach.cfg)
+    mach.broker = NewBroker(mach.cfg)
 }
 
 func (mach *Machine) GetBroker() *Broker {

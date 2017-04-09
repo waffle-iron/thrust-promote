@@ -19,7 +19,7 @@ func main() {
 		"event_send":      EventSend,
 		"release_send":    ReleaseSend,
 	}
-	machine := NewMachine(cfg.Redis.Development)
+	machine := NewMachine(&cfg.Redis.Development)
 	db := db_.NewPostgres(&cfg.Db.Development)
 	log.Println("Registering Tasks...")
 	machine.RegisterTasks(taskMap)
