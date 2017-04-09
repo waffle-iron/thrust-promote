@@ -15,13 +15,20 @@ func (w *Worker) Process(task *Task) error {
     taskFunc := w.machine.GetRegisteredTask(task.Name)
     taskArg := make([]reflect.Value, 1)
     reflectedTask := reflect.ValueOf(taskFunc)
-    taskArg[0] = reflect.ValueOf(*task)
+    taskArg[0] = reflect.ValueOf(task)
 
     results := reflectedTask.Call(taskArg)
-    log.Println("FUnc called successfully")
+    log.Println("Func called successfully")
     if !results[1].IsNil() {
-        return results[1].Interface().(error)
+        // add to results queue as uncessful
+        err := results[1].Interface().(error)
+        task.FinishWithError(err)
+        w.machine.SendTaskResult(task)
+        return err 
     }
+    // add to resuls queue as successful
+    task.FinishWithSuccess()
+    w.machine.SendTaskResult(task)
     return nil
 }
 

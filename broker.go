@@ -52,6 +52,25 @@ func (broker *Broker) QueueTask(task *Task) error {
     return err
 }
 
+
+func (broker *Broker) QueueTaskResult(task *Task) error {
+    addString := broker.BuildAddrString()
+    fmt.Println(addString)
+    broker.pool = db.CreatePool(addString)
+    defer broker.pool.Close()
+
+    broker.errorChan = make(chan error)
+    conn := broker.pool.Get()
+
+    serializedTask, err := json.Marshal(task)
+    if err != nil {
+        return err
+    }
+
+    _, err = conn.Do("RPUSH", "thrust-result-default", serializedTask)
+    return err
+}
+
 func (broker *Broker) Dequeue(worker *Worker) error {
     broker.pool = db.CreatePool(broker.host)
     defer broker.pool.Close()
@@ -113,4 +132,68 @@ func (broker *Broker) SendToWorkers(tasks <-chan Task, worker *Worker) error{
     }
 
     return <-broker.errorChan
+}
+
+
+func (broker *Broker) GetQueuedTasks() (tasks []*Task, error) {
+    addString := broker.BuildAddrString()
+    broker.pool = db.CreatePool(addString)
+    defer broker.pool.Close()
+
+    broker.errorChan = make(chan error)
+    conn := broker.pool.Get()
+
+    serializedTask, err := json.Marshal(task)
+    if err != nil {
+        return err
+    }
+
+    itemBytes, err = conn.Do("LRANGE", "thrust-default", 0, -1)
+
+    items, err := redis.ByteSlices(itemBytes, nil)
+    if err != nil {
+        return nil, err
+    }
+    tasks := make([]*Task)
+    for value, _ := range items {
+        var task Task
+        if err := json.Unmarshal(value, &task); err != nil {
+            return nil, err
+        }
+        append(tasks, task)
+        return err
+    }
+    return tasks, nil
+}
+
+func (broker *Broker) GetFinishedTasks() (tasks []*Task, error) {
+    addString := broker.BuildAddrString()
+    broker.pool = db.CreatePool(addString)
+    defer broker.pool.Close()
+
+    broker.errorChan = make(chan error)
+    conn := broker.pool.Get()
+
+    serializedTask, err := json.Marshal(task)
+    if err != nil {
+        return err
+    }
+
+    itemBytes, err = conn.Do("LRANGE", "thrust-result-default", 0, -1)
+
+    items, err := redis.ByteSlices(itemBytes, nil)
+    if err != nil {
+        return nil, err
+    }
+    tasks := make([]*Task)
+    for value, _ := range items {
+        var task Task
+        if err := json.Unmarshal(value, &task); err != nil {
+            return nil, err
+        }
+        append(tasks, task)
+        return err
+    }
+    return tasks, nil
+
 }

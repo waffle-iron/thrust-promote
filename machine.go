@@ -62,6 +62,14 @@ func (mach *Machine) SendTask(task *Task) error {
     return broker.QueueTask(task)
 }
 
+func (mach *Machine) SendTaskResult(task *Task) error {
+    // A task result is a task and two other params
+    // the start data
+    // end data
+    broker := mach.GetBroker()
+    return broker.QueueTaskResult(task)
+}
+
 func (mach *Machine) CreateBroker() {
     mach.cfg.ParseUrl()
     mach.broker = NewBroker(mach.cfg)

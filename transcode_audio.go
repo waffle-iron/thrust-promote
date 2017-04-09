@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/RichardKnop/uuid"
 	dbc "github.com/ammoses89/thrust-workers/db"
+    helpers "github.com/ammoses89/thrust-workers/helpers"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -29,21 +29,12 @@ func CreateTranscodeAudioTask(rw http.ResponseWriter, req *http.Request, machine
 		fmt.Println("Error ocurred: %v", err)
 	}
 
-	// add UUID
-	task := Task{
-		Id:       fmt.Sprintf("task-%v", uuid.New()),
-		Status:   "Queued",
-		Name:     "transcode_audio",
-		Metadata: string(metadata)}
-	machine.SendTask(&task)
+	task := NewTask("transcode_audio", string(metadata))
+	machine.SendTask(task)
 	return "{\"status\": 200}"
 }
 
-func removeFileExt(filename string) string {
-	return strings.TrimSuffix(filename, filepath.Ext(filename))
-}
-
-func TranscodeAudio(task Task) (bool, error) {
+func TranscodeAudio(task *Task) (bool, error) {
 	var payload AudioTranscodePayload
 	err := task.DeserializeMetadata(&payload)
 	if err != nil {
@@ -58,7 +49,7 @@ func TranscodeAudio(task Task) (bool, error) {
 	DownloadFromGCS(payload.SourceUrl, filename)
 
 	// create file path to download to
-	basename := removeFileExt(filename)
+	basename := helpers.RemoveFileExt(filename)
 	targetFilename := fmt.Sprintf("%s.%s", basename, payload.TranscodeType)
 
 	// transcode

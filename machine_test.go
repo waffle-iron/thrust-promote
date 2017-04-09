@@ -11,7 +11,7 @@ import (
     config "github.com/ammoses89/thrust-workers/config"
 )
 
-func PrintMessage(task Task) (bool, error) {
+func PrintMessage(task *Task) (bool, error) {
     var payload TestPayload
     err := task.DeserializeMetadata(&payload)
     if err != nil {
@@ -46,14 +46,9 @@ func TestMachine(t *testing.T) {
 
     metadata, err := json.Marshal(payload)
 
-    task := &Task{
-        Id:       fmt.Sprintf("task-%v", uuid.New()),
-        Status:   "Queued",
-        Name:     "test",
-        Metadata: string(metadata)}
-
+    task := NewTask("test", string(metadata))
     taskArg := make([]reflect.Value, 1)
-    taskArg[0] = reflect.ValueOf(*task)
+    taskArg[0] = reflect.ValueOf(task)
     reflectedTask := reflect.ValueOf(val)
     results := reflectedTask.Call(taskArg)
     ok := results[0].Interface().(bool)
@@ -63,7 +58,7 @@ func TestMachine(t *testing.T) {
     }
 
     if assert.NoError(t, err) {
-        expectedOk, _ := PrintMessage(*task) 
+        expectedOk, _ := PrintMessage(task) 
         assert.Equal(t, ok, expectedOk)
     }
 
