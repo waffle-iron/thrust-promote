@@ -2,6 +2,7 @@ package main
 
 import (
     "encoding/json"
+    "time"
     "testing"
     "github.com/stretchr/testify/assert"
     config "github.com/ammoses89/thrust-workers/config"
@@ -69,7 +70,7 @@ func TestBrokerSendToWorkers(t *testing.T) {
     badTask := NewTask("test", string(metadata))
 
     err = machine.SendTask(task)
-    machine.broker.errorChan = make(chan error)
+    machine.broker.errorsChan = make(chan error)
     if assert.NoError(t, err) {
         w := NewWorker("worker-test", machine)
         tasks := make(chan *Task)
@@ -80,5 +81,41 @@ func TestBrokerSendToWorkers(t *testing.T) {
         err = machine.broker.SendToWorkers(tasks, w)
         assert.Error(t, err, "badTask should raise error")
     }
+
+}
+
+func TestBrokerDequeue(t *testing.T) {
+    cfg := config.LoadConfig("config/config.yaml")
+    redisCfg := cfg.Redis.Development
+    assert.Equal(t, redisCfg.Url, "redis://localhost:6379/0")
+    redisCfg.ParseUrl()
+
+    // test instantiation
+    machine := NewMachine(&redisCfg)
+
+    taskMap := map[string]interface{}{
+        "printMessage": PrintMessage}
+
+    // register task
+    machine.RegisterTasks(taskMap)
+    // test queueing task in db
+    payload := TestPayload{
+        Message: "hello!",
+    }
+
+    metadata, err := json.Marshal(payload)
+
+    task := NewTask("printMessage", string(metadata))
+    // badTask := NewTask("test", string(metadata))
+
+    err = machine.SendTask(task)
+    assert.NoError(t, err)
+    // err = machine.SendTask(badTask)
+    // assert.NoError(t, err)
+    machine.broker.errorsChan = make(chan error)
+    w := NewWorker("worker-test", machine)
+    time.AfterFunc(1*time.Second, machine.broker.StopDequeue)
+    err = machine.broker.Dequeue(w)
+    assert.NoError(t, err, "stopChan does not raise an error")
 
 }

@@ -18,7 +18,7 @@ type Broker struct {
     port int
     pool *redis.Pool
     stopChan chan int
-    errorChan chan error
+    errorsChan chan error
     wg sync.WaitGroup
 }
 
@@ -59,7 +59,6 @@ func (broker *Broker) QueueTaskResult(task *Task) error {
     broker.pool = db.CreatePool(addString)
     defer broker.pool.Close()
 
-    broker.errorChan = make(chan error)
     conn := broker.pool.Get()
 
     serializedTask, err := json.Marshal(task)
@@ -72,70 +71,88 @@ func (broker *Broker) QueueTaskResult(task *Task) error {
 }
 
 func (broker *Broker) Dequeue(worker *Worker) error {
-    broker.pool = db.CreatePool(broker.host)
+    addString := broker.BuildAddrString()
+    broker.pool = db.CreatePool(addString)
     defer broker.pool.Close()
 
-    broker.errorChan = make(chan error)
+    broker.errorsChan = make(chan error)
+    broker.stopChan = make(chan int)
     tasks := make(chan *Task)
     conn := broker.pool.Get()
 
+    broker.wg.Add(1)
+
     go func() {
+        defer broker.wg.Done()
+
         for {
             select {
             case <-broker.stopChan:
                 return 
             default:
-                itemBytes, err := conn.Do("BLOP", "default", "1")
+                itemBytes, err := conn.Do("BLPOP", "thrust-default", "1")
+
                 if err != nil {
-                    broker.errorChan <- err
+                    fmt.Printf("Error occured: %v \n", err)
+                    broker.errorsChan <- err
                     return
+                }
+
+                if itemBytes == nil {
+                    fmt.Println("NIL Bytes now continue")
+                    continue
                 }
 
                 items, err := redis.ByteSlices(itemBytes, nil)
                 if err != nil {
-                    broker.errorChan <- err
+                    broker.errorsChan <- err
                     return
                 }
 
                 item := items[1]
-
                 var task Task
                 if err := json.Unmarshal(item, &task); err != nil {
-                    broker.errorChan <- err
+                    broker.errorsChan <- err
                     return
                 }
 
                 tasks <- &task
-
             }
         }
         
     }()
 
     if err := broker.SendToWorkers(tasks, worker); err != nil {
-        broker.errorChan <- err
+        return err
     }
 
-    return <-broker.errorChan
+    return nil
 }
 
 func (broker *Broker) SendToWorkers(tasks <-chan *Task, worker *Worker) error{
 
     for {
         select {
-        case err := <-broker.errorChan:
+        case err := <-broker.errorsChan:
             return err
         case t := <- tasks:
             fmt.Println("Task received ", t.Name)
             go func () {
                 if err := worker.Process(t); err != nil {
                     fmt.Printf("Error occured: %v \n", err)
-                    broker.errorChan <- err;
+                    broker.errorsChan <- err;
                     return
                 } 
             }()
+        case <-broker.stopChan:
+            return nil
         }
     }
+}
+
+func (broker *Broker) StopDequeue() {
+    broker.stopChan <- 1
+    broker.wg.Wait()
 }
 
 
