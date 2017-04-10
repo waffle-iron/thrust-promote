@@ -12,7 +12,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 )
 
 func CreateTranscodeAudioTask(rw http.ResponseWriter, req *http.Request, machine *Machine, pg *dbc.Postgres) string {

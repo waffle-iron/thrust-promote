@@ -1,11 +1,10 @@
 package main
 
 import (
-    "fmt"
+    "errors"
     "testing"
     "encoding/json"
     "github.com/stretchr/testify/assert"
-    "github.com/RichardKnop/uuid"
 )
 
 func TestTask(t *testing.T) {
@@ -15,16 +14,32 @@ func TestTask(t *testing.T) {
     }
 
     metadata, err := json.Marshal(payload)
-
-    task := &Task{
-        Id:       fmt.Sprintf("task-%v", uuid.New()),
-        Status:   "Queued",
-        Name:     "test",
-        Metadata: string(metadata)}
+    task := NewTask("test", string(metadata))
 
     var newPayload TestPayload
     err = task.DeserializeMetadata(&newPayload)
     if assert.NoError(t, err) {
         assert.Equal(t, newPayload.Message, payload.Message, "Successful deserialization")
     }
+}
+
+func TestTaskFinish(t *testing.T) {
+
+    payload := TestPayload{
+        Message: "hello!",
+    }
+    metadata, err := json.Marshal(payload)
+
+    task := NewTask("test", string(metadata))
+
+    task.FinishWithSuccess()
+    assert.NotEqual(t, task.EndTimestamp, nil)
+    assert.Equal(t, task.Status, "SUCCEEDED")
+
+    err = errors.New("Test Error")
+
+    task.FinishWithError(err)
+    assert.NotEqual(t, task.EndTimestamp, nil)
+    assert.Equal(t, task.Status, "FAILED")
+    assert.Equal(t, task.ErrorMessage, "Test Error")
 }

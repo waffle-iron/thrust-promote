@@ -18,13 +18,13 @@ type Task struct {
     ErrorMessage string
 }
 
-func NewTask(name string, metdata string) *Task {
+func NewTask(name string, metadata string) *Task {
     // add UUID
     return &Task{
         Id:       fmt.Sprintf("task-%s-%v", name, uuid.New()),
         Status:   "Queued",
         StartTimestamp: time.Now(),
-        Name:     n,
+        Name:     name,
         Metadata: metadata}
 }
 
@@ -42,7 +42,7 @@ func (t *Task) FinishWithError(err error) {
     t.ErrorMessage = err.Error()
 }
 
-func (t *Task) FinishWithError(err error) {
+func (t *Task) FinishWithSuccess() {
     t.EndTimestamp = time.Now()
-    t.Status = "FAILED"
+    t.Status = "SUCCEEDED"
 }

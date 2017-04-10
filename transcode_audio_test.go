@@ -1,11 +1,9 @@
 package main
 
 import (
-    "fmt"
     "testing"
     "encoding/json"
     "github.com/stretchr/testify/assert"
-    "github.com/RichardKnop/uuid"
 )
 
 func TestTranscodeAudio(t *testing.T) {
@@ -20,13 +18,7 @@ func TestTranscodeAudio(t *testing.T) {
     }
 
     metadata, err := json.Marshal(payload)
-
-    task := Task{
-        Id:       fmt.Sprintf("task-%v", uuid.New()),
-        Status:   "Queued",
-        Name:     "transcode_audio",
-        Metadata: string(metadata)}
-
+    task := NewTask("transcode_audio", string(metadata))
     status, err := TranscodeAudio(task)
     if assert.NoError(t, err) {
         assert.Equal(t, status, true, "Successful transcode")

@@ -7,7 +7,6 @@ import (
     "encoding/json"
     "testing"
     "github.com/stretchr/testify/assert"
-    "github.com/RichardKnop/uuid"
     config "github.com/ammoses89/thrust-workers/config"
 )
 
@@ -37,7 +36,7 @@ func TestMachine(t *testing.T) {
     // register task
     machine.RegisterTasks(taskMap)
 
-    val := machine.GetRegisteredTask("printMessage")
+    fn := machine.GetRegisteredTask("printMessage")
 
     // test queueing task in db
     payload := TestPayload{
@@ -47,9 +46,8 @@ func TestMachine(t *testing.T) {
     metadata, err := json.Marshal(payload)
 
     task := NewTask("test", string(metadata))
-    taskArg := make([]reflect.Value, 1)
-    taskArg[0] = reflect.ValueOf(task)
-    reflectedTask := reflect.ValueOf(val)
+    taskArg := []reflect.Value{reflect.ValueOf(task)}
+    reflectedTask := reflect.ValueOf(fn)
     results := reflectedTask.Call(taskArg)
     ok := results[0].Interface().(bool)
     err = nil
@@ -64,5 +62,33 @@ func TestMachine(t *testing.T) {
 
     err = machine.SendTask(task)
     assert.NoError(t, err, "Task sent successfully")
+}
 
+
+func TestMachineSendTaskResult(t *testing.T) {
+
+    cfg := config.LoadConfig("config/config.yaml")
+    redisCfg := cfg.Redis.Development
+    assert.Equal(t, redisCfg.Url, "redis://localhost:6379/0")
+    redisCfg.ParseUrl()
+
+    // test instantiation
+    machine := NewMachine(&redisCfg)
+
+    taskMap := map[string]interface{}{
+        "printMessage": PrintMessage}
+
+    // register task
+    machine.RegisterTasks(taskMap)
+
+    // test queueing task in db
+    payload := TestPayload{
+        Message: "hello!",
+    }
+
+    metadata, err := json.Marshal(payload)
+
+    task := NewTask("test", string(metadata))
+    err = machine.SendTaskResult(task)
+    assert.NoError(t, err, "Task sent successfully")
 }

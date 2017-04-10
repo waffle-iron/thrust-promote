@@ -1,6 +1,8 @@
 package main
 
 import (
+    "fmt"
+    "errors"
     "log"
     "reflect"
 )
@@ -10,14 +12,22 @@ type Worker struct {
     machine *Machine
 }
 
+func NewWorker(name string, mach *Machine) *Worker {
+    return &Worker{Name: name, machine: mach}
+}
+
 func (w *Worker) Process(task *Task) error {
     // will take a task and run task with args
     taskFunc := w.machine.GetRegisteredTask(task.Name)
-    taskArg := make([]reflect.Value, 1)
+    if taskFunc == nil {
+        errMsg := fmt.Sprintf("Invalid Task Name: %v", task.Name)
+        return errors.New(errMsg)
+    }
     reflectedTask := reflect.ValueOf(taskFunc)
-    taskArg[0] = reflect.ValueOf(task)
 
+    taskArg := []reflect.Value{reflect.ValueOf(task)}
     results := reflectedTask.Call(taskArg)
+
     log.Println("Func called successfully")
     if !results[1].IsNil() {
         // add to results queue as uncessful
@@ -36,7 +46,6 @@ func (w *Worker) Process(task *Task) error {
 func (w *Worker) Run() error {
     broker := w.machine.GetBroker()
     errChan := make(chan error)
-
     go func() {
         for {
             err := broker.Dequeue(w)
@@ -46,8 +55,6 @@ func (w *Worker) Run() error {
             }
         }
     }()
-
     return <-errChan
-
 }
 

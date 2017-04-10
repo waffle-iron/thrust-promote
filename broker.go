@@ -2,6 +2,7 @@ package main
 
 import (
     "fmt"
+    "sync"
     "encoding/json"
     "github.com/garyburd/redigo/redis"
     config "github.com/ammoses89/thrust-workers/config"
@@ -16,7 +17,9 @@ type Broker struct {
     password string
     port int
     pool *redis.Pool
+    stopChan chan int
     errorChan chan error
+    wg sync.WaitGroup
 }
 
 func NewBroker(cfg *config.ConnectionSettings) *Broker {
@@ -36,11 +39,9 @@ func (broker *Broker) BuildAddrString() string {
 
 func (broker *Broker) QueueTask(task *Task) error {
     addString := broker.BuildAddrString()
-    fmt.Println(addString)
     broker.pool = db.CreatePool(addString)
     defer broker.pool.Close()
 
-    broker.errorChan = make(chan error)
     conn := broker.pool.Get()
 
     serializedTask, err := json.Marshal(task)
@@ -55,7 +56,6 @@ func (broker *Broker) QueueTask(task *Task) error {
 
 func (broker *Broker) QueueTaskResult(task *Task) error {
     addString := broker.BuildAddrString()
-    fmt.Println(addString)
     broker.pool = db.CreatePool(addString)
     defer broker.pool.Close()
 
@@ -76,12 +76,14 @@ func (broker *Broker) Dequeue(worker *Worker) error {
     defer broker.pool.Close()
 
     broker.errorChan = make(chan error)
-    tasks := make(chan Task)
+    tasks := make(chan *Task)
     conn := broker.pool.Get()
 
     go func() {
         for {
             select {
+            case <-broker.stopChan:
+                return 
             default:
                 itemBytes, err := conn.Do("BLOP", "default", "1")
                 if err != nil {
@@ -103,7 +105,7 @@ func (broker *Broker) Dequeue(worker *Worker) error {
                     return
                 }
 
-                tasks <- task
+                tasks <- &task
 
             }
         }
@@ -117,82 +119,72 @@ func (broker *Broker) Dequeue(worker *Worker) error {
     return <-broker.errorChan
 }
 
-func (broker *Broker) SendToWorkers(tasks <-chan Task, worker *Worker) error{
+func (broker *Broker) SendToWorkers(tasks <-chan *Task, worker *Worker) error{
 
     for {
         select {
+        case err := <-broker.errorChan:
+            return err
         case t := <- tasks:
+            fmt.Println("Task received ", t.Name)
             go func () {
-                if err := worker.Process(&t); err != nil {
+                if err := worker.Process(t); err != nil {
+                    fmt.Printf("Error occured: %v \n", err)
                     broker.errorChan <- err;
                     return
                 } 
             }()
         }
     }
-
-    return <-broker.errorChan
 }
 
 
-func (broker *Broker) GetQueuedTasks() (tasks []*Task, error) {
+func (broker *Broker) GetQueuedTasks() ([]*Task, error) {
     addString := broker.BuildAddrString()
     broker.pool = db.CreatePool(addString)
     defer broker.pool.Close()
 
-    broker.errorChan = make(chan error)
     conn := broker.pool.Get()
 
-    serializedTask, err := json.Marshal(task)
-    if err != nil {
-        return err
-    }
-
-    itemBytes, err = conn.Do("LRANGE", "thrust-default", 0, -1)
+    itemBytes, err := conn.Do("LRANGE", "thrust-default", 0, -1)
 
     items, err := redis.ByteSlices(itemBytes, nil)
     if err != nil {
         return nil, err
     }
-    tasks := make([]*Task)
-    for value, _ := range items {
+
+    var tasks []*Task
+    for _, value := range items {
         var task Task
         if err := json.Unmarshal(value, &task); err != nil {
             return nil, err
         }
-        append(tasks, task)
-        return err
+        tasks = append(tasks, &task)
     }
     return tasks, nil
 }
 
-func (broker *Broker) GetFinishedTasks() (tasks []*Task, error) {
+func (broker *Broker) GetFinishedTasks() ([]*Task, error) {
     addString := broker.BuildAddrString()
     broker.pool = db.CreatePool(addString)
     defer broker.pool.Close()
 
-    broker.errorChan = make(chan error)
     conn := broker.pool.Get()
 
-    serializedTask, err := json.Marshal(task)
-    if err != nil {
-        return err
-    }
-
-    itemBytes, err = conn.Do("LRANGE", "thrust-result-default", 0, -1)
+    itemBytes, err := conn.Do("LRANGE", "thrust-result-default", 0, -1)
 
     items, err := redis.ByteSlices(itemBytes, nil)
     if err != nil {
         return nil, err
     }
-    tasks := make([]*Task)
-    for value, _ := range items {
+
+    var tasks []*Task
+    for _, value := range items {
         var task Task
         if err := json.Unmarshal(value, &task); err != nil {
             return nil, err
         }
-        append(tasks, task)
-        return err
+        tasks = append(tasks, &task)
     }
     return tasks, nil
 

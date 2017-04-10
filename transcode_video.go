@@ -12,7 +12,7 @@ func CreateTranscodeVideoTask() string {
 }
 
 func TranscodeVideo(task *Task) {
-    cmd := `ffmpeg -y -loop 1 -f image2 -i #{@image_file} \
-         -i "#{@audio_file}" -c:v libx264 -c:a aac -strict experimental \
-         -b:a 192k -t #{audio_length} #{@video_file}`
+    // cmd := `ffmpeg -y -loop 1 -f image2 -i #{@image_file} \
+    //      -i "#{@audio_file}" -c:v libx264 -c:a aac -strict experimental \
+    //      -b:a 192k -t #{audio_length} #{@video_file}`
 }
