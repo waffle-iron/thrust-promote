@@ -16,6 +16,7 @@ type Broker struct {
     user string
     password string
     port int
+    retry bool
     pool *redis.Pool
     stopChan chan int
     errorsChan chan error
@@ -70,7 +71,7 @@ func (broker *Broker) QueueTaskResult(task *Task) error {
     return err
 }
 
-func (broker *Broker) Dequeue(worker *Worker) error {
+func (broker *Broker) Dequeue(worker *Worker) (bool, error) {
     addString := broker.BuildAddrString()
     broker.pool = db.CreatePool(addString)
     defer broker.pool.Close()
@@ -123,10 +124,14 @@ func (broker *Broker) Dequeue(worker *Worker) error {
     }()
 
     if err := broker.SendToWorkers(tasks, worker); err != nil {
-        return err
+        return broker.retry, err
     }
 
-    return nil
+    if broker.retry == false {
+        fmt.Printf("Worker %s not retrying\n", worker.Name)
+    }
+
+    return broker.retry, nil
 }
 
 func (broker *Broker) SendToWorkers(tasks <-chan *Task, worker *Worker) error{
@@ -151,6 +156,8 @@ func (broker *Broker) SendToWorkers(tasks <-chan *Task, worker *Worker) error{
 }
 
 func (broker *Broker) StopDequeue() {
+    fmt.Println("Stop chan triggered")
+    broker.retry = false
     broker.stopChan <- 1
     broker.wg.Wait()
 }
@@ -204,5 +211,17 @@ func (broker *Broker) GetFinishedTasks() ([]*Task, error) {
         tasks = append(tasks, &task)
     }
     return tasks, nil
+}
 
+func (broker *Broker) DeleteQueue() error {
+    addString := broker.BuildAddrString()
+    broker.pool = db.CreatePool(addString)
+    defer broker.pool.Close()
+
+    conn := broker.pool.Get()
+    _, err := conn.Do("DEL", "thrust-default")
+    if err != nil {
+        return err
+    }
+    return nil
 }

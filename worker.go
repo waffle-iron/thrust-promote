@@ -48,13 +48,21 @@ func (w *Worker) Run() error {
     errChan := make(chan error)
     go func() {
         for {
-            err := broker.Dequeue(w)
-            if err != nil {
+            retry, err := broker.Dequeue(w)
+            if retry {
+                fmt.Println("Retrying...")
+            } else {
                 errChan <- err
                 return
             }
         }
     }()
+
     return <-errChan
+}
+
+func (w *Worker) Stop() {
+    broker := w.machine.GetBroker()
+    broker.StopDequeue()
 }
 

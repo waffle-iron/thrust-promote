@@ -38,7 +38,7 @@ func (mach *Machine) RegisterTasks(taskMap map[string]interface{}) {
 }
 
 func (mach *Machine) LaunchWorker(name string) error {
-    w := &Worker{Name: name}
+    w := NewWorker(name, mach)
     if err := w.Run(); err != nil {
         log.Fatalf("Worker failed to start: %v", err)
         return err
@@ -47,14 +47,23 @@ func (mach *Machine) LaunchWorker(name string) error {
 }
 
 func (mach *Machine) LaunchWorkers(worker_count int) error {
+    workerErrorsChan := make(chan error)
     for i := 1; i <= worker_count; i++ {
-        w := &Worker{Name: fmt.Sprintf("worker-%d", i)}
-        if err := w.Run(); err != nil {
-            log.Fatalf("Worker failed to start: %v", err)
-            return err
-        }
+        fmt.Println("worker ", i)
+        workerName := fmt.Sprintf("worker-%d", i)
+        log.Printf("Starting worker %s\n", workerName)
+        w := NewWorker(workerName, mach)
+        go func() {
+            err := w.Run(); 
+            if err != nil {
+                log.Fatalf("Worker failed: %v", err)
+            }
+            workerErrorsChan <- err
+            w.Stop()
+            return
+        }()
     }
-    return nil
+    return <-workerErrorsChan
 }
 
 func (mach *Machine) SendTask(task *Task) error {

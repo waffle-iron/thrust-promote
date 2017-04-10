@@ -115,7 +115,8 @@ func TestBrokerDequeue(t *testing.T) {
     machine.broker.errorsChan = make(chan error)
     w := NewWorker("worker-test", machine)
     time.AfterFunc(1*time.Second, machine.broker.StopDequeue)
-    err = machine.broker.Dequeue(w)
+    retry, err := machine.broker.Dequeue(w)
     assert.NoError(t, err, "stopChan does not raise an error")
+    assert.Equal(t, retry, false)
 
 }
