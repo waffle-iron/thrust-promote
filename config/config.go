@@ -60,6 +60,24 @@ type Config struct {
         Development ConnectionSettings `yaml:development`
         Production ConnectionSettings `yaml:production`
     } `yaml:redis`
+    Instagram struct {
+        ClientId string `yaml:client_id`
+        ClientSecret string `yaml:client_secret`
+    } `yaml:instagram`
+    Soundcloud struct {
+        ClientId string `yaml:client_id`
+        ClientSecret string `yaml:client_secret`
+    } `yaml:soundcloud`
+    Youtube struct {
+        ClientId string `yaml:client_id`
+        ClientSecret string `yaml:client_secret`
+        AccessToken string `yaml:access_token`
+        RefreshToken string `yaml:refresh_token`
+    } `yaml:youtube`
+    Dropbox struct {
+        AccessToken string `yaml:access_token`
+        ImageFolder string `yaml:image_folder`
+    } `yaml:dropbox`
 }
 
 func LoadConfig(configPath string) *Config {

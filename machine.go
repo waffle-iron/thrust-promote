@@ -73,8 +73,8 @@ func (mach *Machine) SendTask(task *Task) error {
 
 func (mach *Machine) SendTaskResult(task *Task) error {
     // A task result is a task and two other params
-    // the start data
-    // end data
+    // the start date
+    // end date
     broker := mach.GetBroker()
     return broker.QueueTaskResult(task)
 }
