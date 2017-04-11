@@ -24,10 +24,13 @@ func main() {
 	log.Println("Registering Tasks...")
 	machine.RegisterTasks(taskMap)
 	log.Println("Launching Workers...")
-	if err := machine.LaunchWorkers(WORKER_COUNT); err != nil {
-		log.Fatalf("Failed to launch workers: %v", err)
-		panic(err)
-	}
+
+	go func() {
+		if err := machine.LaunchWorkers(WORKER_COUNT); err != nil {
+			log.Fatalf("Failed to launch workers: %v", err)
+			panic(err)
+		}
+	}()
 
 	m := martini.Classic()
 	m.Use(martini.Static("public"))
@@ -42,7 +45,6 @@ func main() {
 		r.Post("/event/send", CreateEventSendTask)
 		r.Post("/release/send", CreateReleaseSendTask)
 	})
-
 
 	m.Run()
 }

@@ -1,19 +1,34 @@
-package resize
+package image
 
 import (
+    "os"
+    "image"
+    "image/png"
     "github.com/nfnt/resize"
     helpers "github.com/ammoses89/thrust-workers/helpers"
 )
 
-func Resize(sourceImg string) {
-    source, _ := os.Open(sourceImg)
+func Resize(sourceImg string) (string, error) {
+    source, err := os.Open(sourceImg)
+    if err != nil {
+        return nil, err
+    }
     defer source.Close()
 
-    sourceImage, _ := png.Decode(source)
+    sourceImage, err := png.Decode(source)
+    if err != nil {
+        return nil, err
+    }
     newImage := resize.Resize(1280, 720, sourceImage, resize.Lanczos3)
 
     sourceImgBasename := helpers.RemoveFileExt(sourceImg) 
-    resizedImage, _ := os.Create(fmt.Sprintf("%s-%s-%s", sourceImgBasename, "-resized", ".png"))
+    resizedImageFilename := fmt.Sprintf("%s-%s-%s", sourceImgBasename, "-resized", ".png")
+    resizedImage, err := os.Create(resizedImageFilename)
+    if err != nil {
+        return nil, err
+    }
     png.Encode(resizedImage, newImage, &png.Options{Quality: png.DefaultQuality})
     defer resizedImage.Close()
+
+    return resizedImageFilename, nil
 }

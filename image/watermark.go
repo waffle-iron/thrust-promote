@@ -1,6 +1,7 @@
 package image
 
 import (
+    "os"
     "image"
     "image/draw"
     "image/png"
@@ -10,16 +11,28 @@ import (
 func Watermark(sourceImg string) (string, error) {
 
     // we assume that the image has been coverted to PNG
-    source, _ := os.Open(sourceImg)
+    source, err := os.Open(sourceImg)
+    if err != nil {
+        return nil, err
+    }
     defer source.Close()
 
-    sourceImage, _ := png.Decode(source)
+    sourceImage, err := png.Decode(source)
+    if err != nil {
+        return nil, err
+    }
 
     // Open and decode watermark PNG
-    watermark, _ := os.Open("thrust-watermark.png")
+    watermark, err := os.Open("thrust-watermark.png")
+    if err != nil {
+        return nil, err
+    }
     defer watermark.Close()
 
-    watermarkImage, _ := png.Decode(watermark)
+    watermarkImage, err := png.Decode(watermark)
+    if err != nil {
+        return nil, err
+    }
 
     // Watermark offset 20 px from bottom and right
     sourceImageBounds := sourceImage.Bounds()
@@ -34,8 +47,13 @@ func Watermark(sourceImg string) (string, error) {
 
     // save new file
     sourceImgBasename := helpers.RemoveFileExt(sourceImg) 
-    watermarkedImage, _ := os.Create(fmt.Sprintf("%s-%s-%s", sourceImgBasename, "-watermarked", ".png"))
+    watermarkedImageFilename := fmt.Sprintf("%s-%s-%s", sourceImgBasename, "-watermarked", ".png")
+    watermarkedImage, err := os.Create(watermarkedImageFilename)
+    if err != nil {
+        return nil, err
+    }
     png.Encode(watermarkedImage, newImage, &png.Options{Quality: png.DefaultQuality})
     defer watermarkedImage.Close()
 
+    return watermarkedImageFilename, nil
 } 
