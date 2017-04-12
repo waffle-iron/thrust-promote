@@ -9,12 +9,12 @@ import (
 	"log"
 	"net/http"
 	"bytes"
-	"os"
 	"os/exec"
 	"path/filepath"
 )
 
-func CreateTranscodeAudioTask(rw http.ResponseWriter, req *http.Request, machine *Machine, pg *dbc.Postgres) string {
+func CreateTranscodeAudioTask(rw http.ResponseWriter, req *http.Request, 
+							  machine *Machine, pg *dbc.Postgres) string {
 	// TODO add task to worker
 	var payload AudioTranscodePayload
 	res, err := ioutil.ReadAll(req.Body)
@@ -52,19 +52,8 @@ func TranscodeAudio(task *Task) (bool, error) {
 	targetFilename := fmt.Sprintf("%s.%s", basename, payload.TranscodeType)
 
 	// transcode
-	var stdErr bytes.Buffer
-	cmd := exec.Command("ffmpeg", "-i", filename, targetFilename)
-	cmd.Stderr = &stdErr
-	if err := cmd.Start(); err != nil {
-		log.Println(stdErr.String())
-		log.Fatalf("Command failed to start: %v", err)
-		return false, err
-	}
-
-	err = cmd.Wait() 
+	err = helpers.ConvertAudioCommand(filename, targetFilename)
 	if err != nil {
-		log.Println(stdErr.String())
-		log.Fatalf("Command failed to finish: %v", err)
 		return false, err
 	}
 
@@ -72,6 +61,6 @@ func TranscodeAudio(task *Task) (bool, error) {
 	UploadToGCS(targetFilename, payload.TargetUrl)
 
 	// if it fails to delete, don't worry about it
-	os.Remove(filename) 
+	helpers.Remove([]string{filename})
 	return true, nil
 }
