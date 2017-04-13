@@ -6,6 +6,7 @@ import (
     "os/exec"
     "bytes"
     "strings"
+    "strconv"
     "path/filepath"
 )
 
@@ -19,26 +20,33 @@ func RemoveFiles(filenames []string) {
     }
 }
 
-func GetAudioLength(filename string) (int, error) {
+func GetAudioLength(filename string) (float64, error) {
     var stdErr bytes.Buffer
-    cmdString := []string{"-i", filename, "2>&1", "|", "grep Duration", "|",
-       "sed", `'s/Duration: \(.*\), start/\1/g'`}
-    cmd := exec.Command("ffmpeg", cmdString...)
+    var stdOut bytes.Buffer
+    cmd := exec.Command("soxi", "-D", filename)
     cmd.Stderr = &stdErr
+    cmd.Stdout = &stdOut
     if err := cmd.Start(); err != nil {
         log.Println(stdErr.String())
         log.Fatalf("Command failed to start: %v", err)
-        return nil, err
+        return 0, err
     }
 
     err := cmd.Wait() 
     if err != nil {
         log.Println(stdErr.String())
         log.Fatalf("Command failed to finish: %v", err)
-        return nil, err
+        return 0, err
     }
 
-    return cmd.StdErr
+    resultStr := strings.Trim(stdOut.String(), "\r\n")
+    duration, err := strconv.ParseFloat(resultStr, 64)
+
+    if err != nil {
+        return 0, err
+    }
+
+    return duration, nil
 }
 
 func ConvertAudioCommand(filename string, targetFilename string) error {
@@ -51,7 +59,7 @@ func ConvertAudioCommand(filename string, targetFilename string) error {
         return err
     }
 
-    err = cmd.Wait() 
+    err := cmd.Wait() 
     if err != nil {
         log.Println(stdErr.String())
         log.Fatalf("Command failed to finish: %v", err)
@@ -62,13 +70,15 @@ func ConvertAudioCommand(filename string, targetFilename string) error {
 }
 
 func ConvertVideoCommand(filename string, imageFilename string, videoTargetFilename string) error {
-    audioLength := GetAudioLength(filename)
-    // cmd := `ffmpeg -y -loop 1 -f image2 -i #{@image_file} \
-    //      -i "#{@audio_file}" -c:v libx264 -c:a aac -strict experimental \
-    //      -b:a 192k -t #{audio_length} #{@video_file}`
-    cmdString := []string{"-y", "-loop", 1, "-f", "image2", "-i",
+    audioLength, err := GetAudioLength(filename)
+    if err != nil {
+        return err
+    }
+
+    audioLengthStr := strconv.FormatFloat(audioLength, 'f', -1, 64)
+    cmdString := []string{"-y", "-loop", "1", "-f", "image2", "-i",
         imageFilename, "-i", filename, "-c:v", "libx264", "-c:a", "aac",
-        "-strict", "experimental", "-b:a", "193k", "-t", audioLength,
+        "-strict", "experimental", "-b:a", "193k", "-t", audioLengthStr,
         videoTargetFilename}
 
     var stdErr bytes.Buffer

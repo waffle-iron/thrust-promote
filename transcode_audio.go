@@ -8,8 +8,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"bytes"
-	"os/exec"
 	"path/filepath"
 )
 
@@ -61,6 +59,40 @@ func TranscodeAudio(task *Task) (bool, error) {
 	UploadToGCS(targetFilename, payload.TargetUrl)
 
 	// if it fails to delete, don't worry about it
-	helpers.Remove([]string{filename})
-	return true, nil
+	helpers.RemoveFiles([]string{filename})
+
+    // add filename to database
+    cfg := config.LoadConfig("config/config.yaml")
+    //TODO create a test db for this
+    pgCfg := cfg.Db.Development
+    pg := NewPostgres(&pgCfg)
+    db, err := pg.GetConn()
+    if err != nil {
+        return false, err
+    }
+
+    query, err := db.Prepare("SELECT id FROM tracks WHERE id = $1", payload.TrackId)
+    if err != nil {
+        return false, err
+    }
+
+    var trackId int
+    err = query.QueryRow(1).Scan(&trackId)
+    if db.IsNoResultsErr(err) {
+        log.Println("No results found")
+        return false, err
+    }
+
+    if trackId {
+        stmt := db.Prepare(`
+            INSERT INTO asset_files(url_path, staged, file_type, track_id) 
+            VALUES($1, $2, $3, $4)
+        `, payload.TargetUrl, true, payload.TranscodeType, trackId)
+
+        _, err = db.Exec(stmt)
+        if err != nil {
+            return false, err
+        }
+    }
+    return true, nil
 }

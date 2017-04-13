@@ -2,57 +2,58 @@ package image
 
 import (
     "os"
+    "fmt"
     "image"
     "image/draw"
     "image/png"
     helpers "github.com/ammoses89/thrust-workers/helpers"
 )
 
-func Watermark(sourceImg string) (string, error) {
+func Watermark(sourceImg string, watermarkImg string) (string, error) {
 
     // we assume that the image has been coverted to PNG
     source, err := os.Open(sourceImg)
     if err != nil {
-        return nil, err
+        return "", err
     }
     defer source.Close()
 
     sourceImage, err := png.Decode(source)
     if err != nil {
-        return nil, err
+        return "", err
     }
 
     // Open and decode watermark PNG
-    watermark, err := os.Open("thrust-watermark.png")
+    watermark, err := os.Open(watermarkImg)
     if err != nil {
-        return nil, err
+        return "", err
     }
     defer watermark.Close()
 
     watermarkImage, err := png.Decode(watermark)
     if err != nil {
-        return nil, err
+        return "", err
     }
 
     // Watermark offset 20 px from bottom and right
     sourceImageBounds := sourceImage.Bounds()
-    x := 20 - sourceImageBounds.Max.X
-    y := 20 - sourceImageBounds.Max.Y
+    x := sourceImageBounds.Max.X - 200
+    y := sourceImageBounds.Max.Y - 200
     offset := image.Pt(x, y)
 
     // create new image with watermark
     newImage := image.NewRGBA(sourceImageBounds)
-    draw.Draw(newImage, sourceImageBounds, sourceImage, image.Zp. draw.Src)
-    draw.Draw(newImage, watermarkImage.Bounds().Add(offset), watermarkImage, image.Zp. draw.Over)
+    draw.Draw(newImage, sourceImageBounds, sourceImage, image.ZP, draw.Src)
+    draw.Draw(newImage, watermarkImage.Bounds().Add(offset), watermarkImage, image.ZP, draw.Over)
 
     // save new file
     sourceImgBasename := helpers.RemoveFileExt(sourceImg) 
-    watermarkedImageFilename := fmt.Sprintf("%s-%s-%s", sourceImgBasename, "-watermarked", ".png")
+    watermarkedImageFilename := fmt.Sprintf("%s%s%s", sourceImgBasename, "-watermarked", ".png")
     watermarkedImage, err := os.Create(watermarkedImageFilename)
     if err != nil {
-        return nil, err
+        return "", err
     }
-    png.Encode(watermarkedImage, newImage, &png.Options{Quality: png.DefaultQuality})
+    png.Encode(watermarkedImage, newImage)
     defer watermarkedImage.Close()
 
     return watermarkedImageFilename, nil

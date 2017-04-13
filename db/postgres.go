@@ -25,5 +25,17 @@ func (pg *Postgres) GetConn() (*sql.DB, error) {
         log.Fatal(err)
         return nil, err
     }
+    err = db.Ping()
+    if err != nil {
+        log.Fatal(err)
+        return nil, err
+    }
     return db, nil
+}
+
+func (pg *Postgres) IsNoResultsErr(err error) bool {
+    if err == sql.ErrNoRows {
+        retur true
+    }
+    return false
 }
