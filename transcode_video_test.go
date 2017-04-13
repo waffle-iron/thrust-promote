@@ -9,7 +9,7 @@ import (
 func TestTranscodeVideo(t *testing.T) {
     sourceUrlPath := "test/unstaged/audio/test.flac"
     sourceImageUrlPath := "test/unstaged/image/test.jpg"
-    targetUrlPath := "test/staged/audio/test.mp3"
+    targetUrlPath := "test/staged/video/test.mp4"
 
     payload := VideoTranscodePayload{
         SourceUrl: sourceUrlPath,

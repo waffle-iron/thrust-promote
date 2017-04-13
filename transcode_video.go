@@ -74,7 +74,7 @@ func TranscodeVideo(task *Task) (bool, error) {
         }
     }
 
-    videoTargetFilename := fmt.Sprintf("/tmp/video_render_%s-.mp4", task.Id)
+    videoTargetFilename := fmt.Sprintf("/tmp/video_render_%s.mp4", task.Id)
     err = helpers.ConvertVideoCommand(targetFilename, imageFilename, videoTargetFilename)
     if err != nil {
         return false, err
