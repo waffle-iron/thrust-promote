@@ -35,7 +35,7 @@ func (pg *Postgres) GetConn() (*sql.DB, error) {
 
 func (pg *Postgres) IsNoResultsErr(err error) bool {
     if err == sql.ErrNoRows {
-        retur true
+        return true
     }
     return false
 }

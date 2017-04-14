@@ -92,31 +92,23 @@ func TranscodeVideo(task *Task) (bool, error) {
     cfg := config.LoadConfig("config/config.yaml")
     //TODO create a test db for this
     pgCfg := cfg.Db.Development
-    pg := NewPostgres(&pgCfg)
+    pg := dbc.NewPostgres(&pgCfg)
     db, err := pg.GetConn()
     if err != nil {
         return false, err
     }
 
-    query, err := db.Prepare("SELECT id FROM tracks WHERE id = $1", payload.TrackId)
-    if err != nil {
-        return false, err
-    }
-
     var trackId int
-    err = query.QueryRow(1).Scan(&trackId)
-    if db.IsNoResultsErr(err) {
+    err = db.QueryRow("SELECT id FROM tracks WHERE id = $1", payload.TrackID).Scan(&trackId)
+    if pg.IsNoResultsErr(err) {
         log.Println("No results found")
         return false, err
     }
 
-    if trackId {
-        stmt := db.Prepare(`
+    if trackId != 0 {
+        _, err := db.Exec(`
             INSERT INTO asset_files(url_path, staged, file_type, track_id) 
-            VALUES($1, $2, $3, $4)
-        `, payload.TargetUrl, true, 'video', trackId)
-
-        _, err = db.Exec(stmt)
+            VALUES($1, $2, $3, $4)`, payload.TargetUrl, true, "video", trackId)
         if err != nil {
             return false, err
         }
