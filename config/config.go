@@ -78,6 +78,10 @@ type Config struct {
         AccessToken string `yaml:access_token`
         ImageFolder string `yaml:image_folder`
     } `yaml:dropbox`
+    Twitter struct {
+        ConsumerKey string `yaml:consumer_key`
+        ConsumerSecret string `yaml:consumer_secret`
+    } `yaml:twitter`
 }
 
 func LoadConfig(configPath string) *Config {

@@ -5,6 +5,7 @@ import (
     "log"
     "net/url"
     "io/ioutil"
+    config "github.com/ammoses89/thrust-workers/config"
     "github.com/dghubble/oauth1"
     // "golang.org/x/oauth2"
 )
@@ -18,8 +19,8 @@ func CreateSocialSendTask() string {
     return "{\"status\": 200}"
 }
 
-func BuildTwitterClient(message String) (*http.Client, error) {
-    clientCfg := oauth1.NewConfig(cfg.twitter.ConsumerKey, cfg.twitter.ConsumerSecret)
+func BuildTwitterClient(message string, userAccessToken string, userTokenSecret string, cfg *config.Config) (*http.Client, error) {
+    clientCfg := oauth1.NewConfig(cfg.Twitter.ConsumerKey, cfg.Twitter.ConsumerSecret)
     token := oauth1.NewToken(userAccessToken, userTokenSecret)
 
     // httpClient will automatically authorize http.Request's
@@ -37,12 +38,13 @@ func SocialSend(task *Task) (bool, error) {
         return false, err
     }
 
-    switch payload.Service {
-    case "twitter":
+    if payload.Service == "twitter" {
         resp, err := BuildTwitterClient(payload.Message)
-    case "facebook":
-        // TODO
+    } else {
+        // resp, err := BuildTwitterClient(payload.Message)
+
     }
+
     if err != nil {
         log.Fatalf("Failed to send: %v", err)
         return false, err
