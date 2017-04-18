@@ -3,31 +3,34 @@ package main
 import (
     "fmt"
     "log"
-    "net/url"
+    "errors"
+    "encoding/json"
+    "net/http"
     "io/ioutil"
     config "github.com/ammoses89/thrust-workers/config"
-    "github.com/dghubble/oauth1"
-    // "golang.org/x/oauth2"
+    dbc "github.com/ammoses89/thrust-workers/db"
+    social "github.com/ammoses89/thrust-workers/social"
 )
 
-const FacebookURL = "https://graph.facebook.com"
-const TwitterURL = "https://api.twitter.com/1.1/statuses/update.json"
-
-func CreateSocialSendTask() string {
+func CreateSocialSendTask(rw http.ResponseWriter, req *http.Request, 
+                              machine *Machine, pg *dbc.Postgres) string {
     // TODO add task to worker
+    var payload SocialSendPayload
+    res, err := ioutil.ReadAll(req.Body)
+    if err := json.Unmarshal(res, &payload); err != nil {
+        fmt.Println("Could not parse JSON: %v", err)
+    }
+
+    metadata, err := json.Marshal(payload)
+
+    if err != nil {
+        fmt.Println("Error ocurred: %v", err)
+    }
+
+    task := NewTask("social_send", string(metadata))
+    machine.SendTask(task)
     fmt.Println("Save task")
     return "{\"status\": 200}"
-}
-
-func BuildTwitterClient(message string, userAccessToken string, userTokenSecret string, cfg *config.Config) (*http.Client, error) {
-    clientCfg := oauth1.NewConfig(cfg.Twitter.ConsumerKey, cfg.Twitter.ConsumerSecret)
-    token := oauth1.NewToken(userAccessToken, userTokenSecret)
-
-    // httpClient will automatically authorize http.Request's
-    httpClient := clientCfg.Client(oauth1.NoContext, token)
-
-    status := url.Values{"status": {message}}
-    return httpClient.PostForm(TwitterURL, status) 
 }
 
 func SocialSend(task *Task) (bool, error) {
@@ -38,20 +41,26 @@ func SocialSend(task *Task) (bool, error) {
         return false, err
     }
 
-    if payload.Service == "twitter" {
-        resp, err := BuildTwitterClient(payload.Message)
-    } else {
-        // resp, err := BuildTwitterClient(payload.Message)
-
+    cfg := config.LoadConfig("config/config.yaml")
+    fmt.Println(payload.Service)
+    switch payload.Service {
+    case "twitter":
+        twit := social.MakeTwitter(cfg.Twitter.ConsumerKey, 
+                                   cfg.Twitter.ConsumerSecret)
+        _, err = twit.SendMessage(payload.Message, payload.SocialID)
+        if err != nil {
+            return false, err
+        }
+    case "facebook":
+        // TODO send facebook post
+        videoTargetFilename := fmt.Sprintf("/tmp/video_fb_%s.mp4", task.Id)
+        fb := social.MakeFacebook()
+        _, err = fb.SendMessage(payload.Message, payload.SocialID)
+        return true, nil
+    default:
+        log.Fatalf("Social services is not supported %s", payload.Service)
+        msg := fmt.Sprintf("Social services is not supported %s", payload.Service)
+        return false, errors.New(msg)
     }
-
-    if err != nil {
-        log.Fatalf("Failed to send: %v", err)
-        return false, err
-    }
-    defer resp.Body.Close()
-    // what to do with body?
-    body, _ := ioutil.ReadAll(resp.Body)
-    log.Printf("Response: %s\n", body)
     return true, nil
 }

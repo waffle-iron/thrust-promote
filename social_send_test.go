@@ -8,12 +8,15 @@ package main
 */
 
 import (
+    "time"
     "testing"
     "encoding/json"
     "github.com/stretchr/testify/assert"
+    dbc "github.com/ammoses89/thrust-workers/db"
+    config "github.com/ammoses89/thrust-workers/config"
 )
 
-func TestSocialSend(t *testing.T) {
+func TestSocialTwitterSend(t *testing.T) {
     /* 
     find the access token from the db
     and send the message
@@ -21,14 +24,27 @@ func TestSocialSend(t *testing.T) {
     schedule the post
     */
 
-    // AccessToken := "836439866992779265-D0t5sPjtuNgh0TdCebK1T37ofBX6rDG"
+    accessToken := "836439866992779265-D0t5sPjtuNgh0TdCebK1T37ofBX6rDG"
+    tokenSecret := "836439866992779265-D0t5sPjtuNgh0TdCebK1T37ofBX6rDG"
     // insert into DB
+    cfg := config.LoadConfig("config/config.yaml")
+    //TODO create a test db for this
+    pgCfg := cfg.Db.Development
+    pg := dbc.NewPostgres(&pgCfg)
+    db, err := pg.GetConn()
+    assert.NoError(t, err)
 
+    var socialID int
+    err = db.QueryRow(`
+        INSERT INTO socials(provider, name, oauth_token, token_secret, created_at, updated_at) 
+        VALUES($1, $2, $3, $4, $5, $6) returning id;
+    `, "twitter", "marsmoses", accessToken, tokenSecret, time.Now(), time.Now()).Scan(&socialID)
 
+    assert.NoError(t, err)
     payload := SocialSendPayload{
         Service: "twitter",
-        Message: "hello twitter! #myfirsttweet",
-        SocialID: 1,
+        Message: "thrust bot test",
+        SocialID: socialID,
     }
 
     metadata, err := json.Marshal(payload)
@@ -38,4 +54,9 @@ func TestSocialSend(t *testing.T) {
         assert.Equal(t, status, true, "Successful send")
     }
 
+    _, err = db.Exec(`
+        DELETE FROM socials 
+        WHERE id = $1
+    `, socialID)
+    assert.NoError(t, err)
 }
