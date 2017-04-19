@@ -53,10 +53,13 @@ func SocialSend(task *Task) (bool, error) {
         }
     case "facebook":
         // TODO send facebook post
-        videoTargetFilename := fmt.Sprintf("/tmp/video_fb_%s.mp4", task.Id)
+        // videoTargetFilename := fmt.Sprintf("/tmp/video_fb_%s.mp4", task.Id)
         fb := social.MakeFacebook()
         _, err = fb.SendMessage(payload.Message, payload.SocialID)
-        return true, nil
+        fmt.Printf("Error occured: %v\n", err)
+        if err != nil {
+            return false, err
+        }
     default:
         log.Fatalf("Social services is not supported %s", payload.Service)
         msg := fmt.Sprintf("Social services is not supported %s", payload.Service)

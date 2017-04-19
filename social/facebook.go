@@ -3,8 +3,12 @@ package social
 import (
     config "github.com/ammoses89/thrust-workers/config"
     dbc "github.com/ammoses89/thrust-workers/db"
+    "errors"
+    "io/ioutil"
     "net/http"
+    "os"
     "net/url"
+    "bufio"
     "fmt"
     "log"
     // "golang.org/x/oauth2"
@@ -20,7 +24,6 @@ func MakeFacebook() *Facebook {
 }
 
 func (facebook *Facebook) SendMessage(message string, socialID int) (string, error) {
-    endpoint := fmt.Sprintf(FacebookURL, "/", facebook.PageID, "/", "feed")
 
     cfg := config.LoadConfig("config/config.yaml")
     //TODO create a test db for this
@@ -43,13 +46,13 @@ func (facebook *Facebook) SendMessage(message string, socialID int) (string, err
         return "", err
     }
 
-    if pageID == nil {
+    if pageID == 0 {
         return "", errors.New("No page id found")
     }
 
-
+    endpoint := fmt.Sprintf(FacebookURL, "/", pageID, "/", "feed")
     params := url.Values{"message": {message},
-                         "access_token": accessToken}
+                         "access_token": {accessToken}}
     resp, err := http.PostForm(endpoint, params) 
 
     if err != nil {
@@ -63,8 +66,7 @@ func (facebook *Facebook) SendMessage(message string, socialID int) (string, err
     return string(body), err
 }
 
-func (facebook *Facebook) SendVideo(videoUrl string, videoFilename string) (string, error) {
-    endpoint := fmt.Sprintf(FacebookURL, "/", facebook.PageID, "/", "videos")
+func (facebook *Facebook) SendVideo(videoUrl string, videoFilename string, socialID int) (string, error) {
 
     cfg := config.LoadConfig("config/config.yaml")
     //TODO create a test db for this
@@ -87,22 +89,28 @@ func (facebook *Facebook) SendVideo(videoUrl string, videoFilename string) (stri
         return "", err
     }
 
-    if pageID == nil {
+    if pageID == 0 {
         return "", errors.New("No page id found")
     }
 
-    httpClient := facebook.BuildFacebookClient(accessToken, pageID)
+    filePtr, err := os.Open(videoFilename)
 
-    DownloadFromGCS(videoUrl, videoFilename)
-    fileData, err := os.Open(videoFilename)
     if err != nil {
         log.Fatalf("Failed to open file: %v", err)
         return "", err
     }
 
-    params := url.Values{"file": {fileData},
-                         "access_token": accessToken}
-    resp, err := http.PostForm(endpoint, "application/mp4", params) 
+
+    buf := bufio.NewReader(filePtr)
+
+    if err != nil {
+        log.Fatalf("Failed to read file: %v", err)
+        return "", err
+    }
+
+    params := url.Values{"access_token": {accessToken}}
+    endpoint := fmt.Sprintf(FacebookURL, "/", pageID, "/", "videos", params.Encode())
+    resp, err := http.Post(endpoint, "video/mp4", buf) 
 
     if err != nil {
         log.Fatalf("Failed to send: %v", err)
