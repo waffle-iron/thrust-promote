@@ -25,16 +25,10 @@ func (yt *Youtube) BuildYoutubeClient(accessToken string) *http.Client {
     config := &oauth2.Config{
                 ClientID:     yt.ClientID,
                 ClientSecret: yt.ClientSecret,
-                Scopes:       []string{youtube.YoutubeUploadScope},
-                // AuthURL:      cfg.Installed.AuthURI,
-                // TokenURL:     cfg.Installed.TokenURI,
+                Scopes:       []string{youtube.YoutubeScope, 
+                        youtube.YoutubeReadonlyScope, 
+                        youtube.YoutubeUploadScope},
                 // RedirectURL:  redirectUri,
-                // TokenCache:   oauth.CacheFile(*cacheFile),
-                // Get a refresh token so we can use the access token indefinitely
-                // AccessType: "offline",
-                // If we want a refresh token, we must set this attribute
-                // to force an approval prompt or the code won't work.
-                // ApprovalPrompt: "force",
     }
     log.Println("AccessToken: ", accessToken)
 
@@ -96,6 +90,8 @@ func (yt *Youtube) SendVideo(title string, description string, videoFilename str
         log.Fatalf("Error opening %v: %v", videoFilename, err)
         return "", err
     }
+
+    upload.Snippet.Tags = []string{"thrust"}
 
     resp, err := call.Media(videoFile).Do()
     if err != nil {

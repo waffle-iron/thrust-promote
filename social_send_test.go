@@ -115,7 +115,7 @@ func TestSocialYoutubeUpload(t *testing.T) {
     schedule the post
     */
 
-    accessToken := "ya29.GlsyBLhYgdFoV-v-r0kdO-qqK7YmB1HnPLoeBYN1p9qy6pWYNTEx_CnRHo3z3qcFtJZ7ZjDGx_tmm3J9l8rmm4guvhI6jvx9Vmo4e5z5BnnPn5BMhyhr2I2bAxaz"
+    accessToken := "ya29.GlsyBLzXD4G0HNpYUrhMEFeuS6PUsaLk9NY4WCodLXzjwzJLp15GqNMmo1Vm5up8mqOUzZ2Db7GXMKeAHb9uUCojdZEBETG8Gp3591PUjIv0MNhUlOY-yB2xHONU"
     // insert into DB
     cfg := config.LoadConfig("config/config.yaml")
     //TODO create a test db for this
