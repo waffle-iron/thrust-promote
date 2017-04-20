@@ -9,7 +9,7 @@ import (
 )
 
 
-func DownloadFromGCS(urlPath string, filename string) string {
+func DownloadFromGCS(urlPath string, filename string) (string, error) {
     ctx := context.Background()
 
     // set a project ID
@@ -31,18 +31,18 @@ func DownloadFromGCS(urlPath string, filename string) string {
     rc, err := object.NewReader(ctx)
     if err != nil {
         // reader
-        panic(err)
+        return "", err
     }
     data, err := ioutil.ReadAll(rc)
     rc.Close()
     if err != nil {
         // Handle error
-        panic(err)
+        return "", err
     }
 
     if err := ioutil.WriteFile(filename, data, 777); err != nil {
-        panic(err)
+        return "", err
     }
 
-    return filename
+    return filename, nil
 }

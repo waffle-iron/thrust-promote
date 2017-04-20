@@ -51,7 +51,7 @@ func (twitter *Twitter) SendMessage(message string, socialID int) (string, error
     endpoint := fmt.Sprintf("%s%s", TwitterURL, "/statuses/update.json")
     var accessToken, tokenSecret string
     err = db.QueryRow(`
-        SELECT access_token, token_secret 
+        SELECT oauth_token, token_secret 
         FROM socials WHERE id = $1`, 
         socialID).Scan(&accessToken, &tokenSecret)
 

@@ -1,28 +1,31 @@
 package social
 
 import (
+    "os"
+    "log"
     "net/http"
-    "io/ioutil"
-    "code.google.com/p/google-api-go-client/youtube/v3"
-    "code.google.com/p/goauth2/oauth"
+    "google.golang.org/api/youtube/v3"
+    "golang.org/x/oauth2"
+    config "github.com/ammoses89/thrust-workers/config"
+    dbc "github.com/ammoses89/thrust-workers/db"
 )
 
 // https://github.com/youtube/api-samples/blob/master/go/upload_video.go
 // https://developers.google.com/youtube/v3/code_samples/go
-type YouTube struct {
+type Youtube struct {
     ClientID string
     ClientSecret string
 }
 
 func MakeYoutube(clientID string, clientSecret string) *Youtube {
-    return &YouTube{ClientID: clientID, ClientSecret: clientSecret}
+    return &Youtube{ClientID: clientID, ClientSecret: clientSecret}
 }
 
-func (yt *YouTube) BuildYoutubeClient(accessToken string) *http.Client {
-    config := &oauth.Config{
-                ClientId:     yt.ClientID,
+func (yt *Youtube) BuildYoutubeClient(accessToken string) *http.Client {
+    config := &oauth2.Config{
+                ClientID:     yt.ClientID,
                 ClientSecret: yt.ClientSecret,
-                Scope:        youtube.YoutubeUploadScope,
+                Scopes:       []string{youtube.YoutubeUploadScope},
                 // AuthURL:      cfg.Installed.AuthURI,
                 // TokenURL:     cfg.Installed.TokenURI,
                 // RedirectURL:  redirectUri,
@@ -32,15 +35,39 @@ func (yt *YouTube) BuildYoutubeClient(accessToken string) *http.Client {
                 // If we want a refresh token, we must set this attribute
                 // to force an approval prompt or the code won't work.
                 // ApprovalPrompt: "force",
-        }
+    }
+    log.Println("AccessToken: ", accessToken)
 
-    transport := &oauth.Transport{Config: config}
-    transport.Token = accessToken
-    return transport.Client()
+    return config.Client(oauth2.NoContext, &oauth2.Token{AccessToken: accessToken})
 }
 
-func (yt *YouTube) SendVideo(title string, description string, videoFilename string) (string, error) {
-    client, err := yt.BuildYoutubeClient()
+func (yt *Youtube) SendVideo(title string, description string, videoFilename string, socialID int) (string, error) {
+    cfg := config.LoadConfig("config/config.yaml")
+    //TODO create a test db for this
+    pgCfg := cfg.Db.Development
+    pg := dbc.NewPostgres(&pgCfg)
+    db, err := pg.GetConn()
+    if err != nil {
+        return "", err
+    }
+
+    var accessToken string
+    err = db.QueryRow(`
+        SELECT oauth_token 
+        FROM socials WHERE id = $1`, 
+        socialID).Scan(&accessToken)
+
+    if pg.IsNoResultsErr(err) {
+        log.Println("No results found")
+        return "", err
+    }
+
+    if err != nil {
+        log.Fatalf("Query Error: %v", err)
+        return "", err
+    }
+
+    client := yt.BuildYoutubeClient(accessToken)
     if err != nil {
         log.Fatalf("Error building OAuth client: %v", err)
         return "", err
@@ -56,26 +83,26 @@ func (yt *YouTube) SendVideo(title string, description string, videoFilename str
         Snippet: &youtube.VideoSnippet{
             Title:       title,
             Description: description,
-            CategoryId:  "music", // is a number, we'll figure it out
+            CategoryId:  "10",
         },
         Status: &youtube.VideoStatus{PrivacyStatus: "unlisted"},
     }
 
     call := service.Videos.Insert("snippet,status", upload)
-    file, err := os.Open(videoFilename)
-    defer file.Close()
+    log.Println(videoFilename)
+    videoFile, err := os.Open(videoFilename)
+    defer videoFile.Close()
     if err != nil {
-        log.Fatalf("Error opening %v: %v", *filename, err)
+        log.Fatalf("Error opening %v: %v", videoFilename, err)
         return "", err
     }
 
-    resp, err := call.Media(file).Do()
+    resp, err := call.Media(videoFile).Do()
     if err != nil {
         log.Fatalf("Error making YouTube API call: %v", err)
         return "", err
     }
 
-    body, err := ioutil.ReadAll(resp.Body)
-    log.Printf("Response: %s\n", body)
-    return string(body), err
+    log.Printf("Response: %s\n", resp.Id)
+    return "done", err
 }

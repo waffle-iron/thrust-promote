@@ -41,6 +41,17 @@ func SocialSend(task *Task) (bool, error) {
         return false, err
     }
 
+    var videoTargetFilename string
+    if payload.VideoUrl != "" {
+        videoTargetFilename = fmt.Sprintf("/tmp/video_ss_%s.mp4", task.Id)
+        fmt.Println(videoTargetFilename)
+        _, err = DownloadFromGCS(payload.VideoUrl, videoTargetFilename)
+        if err != nil {
+            return false, err
+        }
+
+    }
+
     cfg := config.LoadConfig("config/config.yaml")
     fmt.Println(payload.Service)
     switch payload.Service {
@@ -53,13 +64,22 @@ func SocialSend(task *Task) (bool, error) {
         }
     case "facebook":
         // TODO send facebook post
-        // videoTargetFilename := fmt.Sprintf("/tmp/video_fb_%s.mp4", task.Id)
         fb := social.MakeFacebook()
         _, err = fb.SendMessage(payload.Message, payload.SocialID)
         fmt.Printf("Error occured: %v\n", err)
         if err != nil {
             return false, err
         }
+    case "youtube":
+        yt := social.MakeYoutube(cfg.Youtube.ClientID, cfg.Youtube.ClientSecret)
+        _, err = yt.SendVideo(payload.Title, payload.Description, 
+            videoTargetFilename, payload.SocialID)
+        fmt.Printf("Error occured: %v\n", err)
+        if err != nil {
+            return false, err
+        }
+    case "soundcloud":
+        return true, nil
     default:
         log.Fatalf("Social services is not supported %s", payload.Service)
         msg := fmt.Sprintf("Social services is not supported %s", payload.Service)

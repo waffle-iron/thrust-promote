@@ -44,7 +44,10 @@ func TranscodeAudio(task *Task) (bool, error) {
 	filename := fmt.Sprintf("/tmp/audio_dl_%s-%s", task.Id, extname)
 
 	// grab file
-	DownloadFromGCS(payload.SourceUrl, filename)
+	_, err = DownloadFromGCS(payload.SourceUrl, filename)
+    if err != nil {
+        return false, err
+    }
 
 	// create file path to download to
 	basename := helpers.RemoveFileExt(filename)

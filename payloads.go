@@ -34,6 +34,9 @@ type SocialSendPayload struct {
     status string `json:status`
     Service string `json:service`
     Message string `json:message`
+    Title string `json:title`
+    Description string `json:description`
+    VideoUrl string `json:video_url`
     PublishAt time.Time `json:publish_at`
     SocialID int `json:social_id`
 }

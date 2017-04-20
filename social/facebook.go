@@ -37,7 +37,7 @@ func (facebook *Facebook) SendMessage(message string, socialID int) (string, err
     var accessToken string
     var pageID int
     err = db.QueryRow(`
-        SELECT access_token, page_id 
+        SELECT oauth_token, page_id 
         FROM socials WHERE id = $1`, 
         socialID).Scan(&accessToken, &pageID)
 

@@ -9,7 +9,7 @@ import (
 )
 
 
-func UploadToGCS(urlPath string, filename string) int {
+func UploadToGCS(filename string, urlPath string) int {
     ctx := context.Background()
 
     // set a project ID

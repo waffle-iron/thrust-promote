@@ -33,8 +33,8 @@ soundcloud:
   client_id: "2053a585c080d663ad9233f7472f6c72"
   client_secret: "510943c3dc186fe6d05f32b831c2308b"
 youtube:
-  client_id: "345343869265-aktpnatqk0ve5emmf0knb5chr6q0picc.apps.googleusercontent.com"
-  client_secret: "74zUxuG9t1Zb9KeyZdPF2p6g"
+  client_id: 738290652212-vkane323v38t3oet4a9eo88j8hfd47ra.apps.googleusercontent.com
+  client_secret: VvGfBU27WyjXjvFqtt-kSwbc
   access_token: "ya29.qgF7U2XtR-eqL1H5NAzt5R-WlxAyxMqyVae5T8L-PKZVQOzzxQR5NYmZv2Bxy_L_GqnSG9CWG-Ohdg"
   refresh_token: "1/aK-8V5gX7PzLubz0RbgLy0JmV6ACMsQUEXC0ZhUKIQhIgOrJDtdun6zK6XiATCKT"
 dropbox:

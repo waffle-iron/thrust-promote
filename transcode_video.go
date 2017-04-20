@@ -3,6 +3,7 @@ package main
 import (
     "encoding/json"
     "fmt"
+    "time"
     dbc "github.com/ammoses89/thrust-workers/db"
     imgPkg "github.com/ammoses89/thrust-workers/image"
     helpers "github.com/ammoses89/thrust-workers/helpers"
@@ -44,13 +45,18 @@ func TranscodeVideo(task *Task) (bool, error) {
     filename := fmt.Sprintf("/tmp/audio_dl_%s-%s", task.Id, extname)
 
     // grab file
-    DownloadFromGCS(payload.SourceUrl, filename)
+    log.Println("Downloading Audio File...")
+    _, err = DownloadFromGCS(payload.SourceUrl, filename)
+    if err != nil {
+        return false, err
+    }
 
     // create file path to download to
     basename := helpers.RemoveFileExt(filename)
     targetFilename := fmt.Sprintf("%s.%s", basename, payload.TranscodeType)
 
     // transcode
+    log.Println("Transcoding Audio File...")
     err = helpers.ConvertAudioCommand(filename, targetFilename)
     if err != nil {
         return false, err
@@ -61,7 +67,12 @@ func TranscodeVideo(task *Task) (bool, error) {
     imageFilename := fmt.Sprintf("/tmp/image_dl_%s-%s", task.Id, imageExtname)
 
     // grab image file
-    DownloadFromGCS(payload.ImageUrl, imageFilename)
+    log.Println("Downloading Image File...")
+    _, err = DownloadFromGCS(payload.ImageUrl, imageFilename)
+
+    if err != nil {
+        return false, err
+    }
 
     jpegFileTypes := []string{".jpeg", ".jpg"}
     for _, imageFileType := range jpegFileTypes {
@@ -75,12 +86,14 @@ func TranscodeVideo(task *Task) (bool, error) {
     }
 
     videoTargetFilename := fmt.Sprintf("/tmp/video_render_%s.mp4", task.Id)
+    log.Println("Converting Video File...")
     err = helpers.ConvertVideoCommand(targetFilename, imageFilename, videoTargetFilename)
     if err != nil {
         return false, err
     }
 
     // upload to gcs
+    log.Println("Uploading Video File...")
     UploadToGCS(videoTargetFilename, payload.TargetUrl)
 
     // if it fails to delete, don't worry about it
@@ -107,8 +120,8 @@ func TranscodeVideo(task *Task) (bool, error) {
 
     if trackId != 0 {
         _, err := db.Exec(`
-            INSERT INTO asset_files(url_path, staged, file_type, track_id) 
-            VALUES($1, $2, $3, $4)`, payload.TargetUrl, true, "video", trackId)
+            INSERT INTO asset_files(url_path, staged, file_type, track_id, created_at, updated_at) 
+            VALUES($1, $2, $3, $4, $5, $6)`, payload.TargetUrl, true, "video", trackId, time.Now(), time.Now())
         if err != nil {
             return false, err
         }

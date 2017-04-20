@@ -69,7 +69,7 @@ type Config struct {
         ClientSecret string `yaml:client_secret`
     } `yaml:soundcloud`
     Youtube struct {
-        ClientId string `yaml:client_id`
+        ClientID string `yaml:client_id`
         ClientSecret string `yaml:client_secret`
         AccessToken string `yaml:access_token`
         RefreshToken string `yaml:refresh_token`
