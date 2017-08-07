@@ -38,3 +38,6 @@ jspm_packages
 *.sublime-workspace
 thrust-5f3eaea7e015.json
 thrust-workers
+thrust-promote
+
+config/config.yml

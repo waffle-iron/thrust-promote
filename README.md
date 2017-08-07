@@ -1,4 +1,4 @@
-# Thrust Workers
+# Thrust Promote
 This will be HTTP triggered worker
 
 
