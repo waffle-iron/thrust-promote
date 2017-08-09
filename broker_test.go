@@ -5,8 +5,8 @@ import (
     "time"
     "testing"
     "github.com/stretchr/testify/assert"
-    config "github.com/ammoses89/thrust-workers/config"
-    db "github.com/ammoses89/thrust-workers/db"
+    config "github.com/ammoses89/thrust-promote/config"
+    db "github.com/ammoses89/thrust-promote/db"
 )
 
 func TestBroker(t *testing.T) {

@@ -2,7 +2,7 @@ package db
 
 import (
     "testing"
-    config "github.com/ammoses89/thrust-workers/config"
+    config "github.com/ammoses89/thrust-promote/config"
     "github.com/stretchr/testify/assert"
 )
 

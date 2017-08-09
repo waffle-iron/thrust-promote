@@ -5,7 +5,7 @@ import (
     "image"
     "testing"
     "github.com/stretchr/testify/assert"
-    helpers "github.com/ammoses89/thrust-workers/helpers"
+    helpers "github.com/ammoses89/thrust-promote/helpers"
 )
 
 func TestWatermarkImage(t *testing.T) {

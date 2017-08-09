@@ -2,7 +2,7 @@ package main
 
 import (
     "log"
-    config "github.com/ammoses89/thrust-workers/config"
+    config "github.com/ammoses89/thrust-promote/config"
     "fmt"
 )
 

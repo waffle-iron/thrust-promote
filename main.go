@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/go-martini/martini"
 	"log"
-	config "github.com/ammoses89/thrust-workers/config"
-	db_ "github.com/ammoses89/thrust-workers/db"
+	config "github.com/ammoses89/thrust-promote/config"
+	db_ "github.com/ammoses89/thrust-promote/db"
 )
 
 const WORKER_COUNT = 5;

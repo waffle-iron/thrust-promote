@@ -7,9 +7,9 @@ import (
     "encoding/json"
     "net/http"
     "io/ioutil"
-    config "github.com/ammoses89/thrust-workers/config"
-    dbc "github.com/ammoses89/thrust-workers/db"
-    social "github.com/ammoses89/thrust-workers/social"
+    config "github.com/ammoses89/thrust-promote/config"
+    dbc "github.com/ammoses89/thrust-promote/db"
+    social "github.com/ammoses89/thrust-promote/social"
 )
 
 func CreateSocialSendTask(rw http.ResponseWriter, req *http.Request, 

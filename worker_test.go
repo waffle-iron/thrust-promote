@@ -4,7 +4,7 @@ import (
     "encoding/json"
     "testing"
     "github.com/stretchr/testify/assert"
-    config "github.com/ammoses89/thrust-workers/config"
+    config "github.com/ammoses89/thrust-promote/config"
 )
 
 func TestWorkerProgress(t *testing.T) {

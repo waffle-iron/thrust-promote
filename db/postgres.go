@@ -4,7 +4,7 @@ import (
     "fmt"
     "log"
     "database/sql"
-    config "github.com/ammoses89/thrust-workers/config"
+    config "github.com/ammoses89/thrust-promote/config"
     _ "github.com/lib/pq"
 )
 

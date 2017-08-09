@@ -5,7 +5,7 @@ import (
     "fmt"
     "image/png"
     "github.com/nfnt/resize"
-    helpers "github.com/ammoses89/thrust-workers/helpers"
+    helpers "github.com/ammoses89/thrust-promote/helpers"
 )
 
 func Resize(sourceImg string) (string, error) {

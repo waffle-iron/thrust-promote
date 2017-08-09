@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-    config "github.com/ammoses89/thrust-workers/config"
-	dbc "github.com/ammoses89/thrust-workers/db"
-    helpers "github.com/ammoses89/thrust-workers/helpers"
+    config "github.com/ammoses89/thrust-promote/config"
+	dbc "github.com/ammoses89/thrust-promote/db"
+    helpers "github.com/ammoses89/thrust-promote/helpers"
 	"io/ioutil"
 	"log"
 	"net/http"

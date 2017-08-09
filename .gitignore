@@ -41,3 +41,13 @@ thrust-workers
 thrust-promote
 
 config/config.yml
+
+node_modules
+.idea/*
+*.pyc
+tmp
+public/dist
+*.sublime-workspace
+clients/*
+public/dist/bundle.css
+*.map

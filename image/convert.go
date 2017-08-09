@@ -6,7 +6,7 @@ import (
     "log"
     "image/jpeg"
     "image/png"
-    helpers "github.com/ammoses89/thrust-workers/helpers"
+    helpers "github.com/ammoses89/thrust-promote/helpers"
 )
 
 func ConvertToPNG(sourceImg string) (string, error) {
