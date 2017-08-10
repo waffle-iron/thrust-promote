@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/ammoses89/thrust-promote.png?label=ready&title=Ready)](https://waffle.io/ammoses89/thrust-promote?utm_source=badge)
 # Thrust Promote
 This will be HTTP triggered worker
 
